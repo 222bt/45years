@@ -132,10 +132,16 @@ h2{font-size:clamp(22px,5.6vw,28px)}
 .log .a{color:var(--muted)}
 details summary{cursor:pointer;font-size:15px}
 
-.coll{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.coll{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+@media (max-width:480px){.coll{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.card{padding:10px}}
 .card{border:1.5px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:4px;min-height:92px}
 .card.got{border-color:var(--ink)}
 .card .cn{font-size:16px;line-height:1.4}
+.portrait{align-self:flex-start;padding:8px;background:var(--wall);border:1px solid var(--line);border-radius:6px;line-height:0}
+.sprite,.thumb{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+.sprite{width:192px;height:192px;max-width:100%}
+.thumb{width:100%;height:auto;aspect-ratio:1;max-width:100%;border-radius:4px}
+.locked-thumb{display:grid;place-items:center;background:var(--wall);color:var(--muted);font-size:32px;line-height:1}
 .card .hint{font-size:13px;line-height:1.55;color:var(--ink);border-top:1px dashed var(--line);padding-top:6px;margin-top:2px}
 .card .ch{font-size:13px;color:var(--muted);line-height:1.5}
 .card.locked .cn{color:var(--muted)}
@@ -812,10 +818,89 @@ function decideEnding(){
 }
 function finish(){
   const id=decideEnding();S.ending=id;S.phase='ending';
-  const got=ls.get(END_KEY)||{};if(!got[id])got[id]={name:S.name,at:Date.now()};ls.set(END_KEY,got);
+  const got=ls.get(END_KEY)||{};if(!got[id])got[id]={name:S.name,gender:S.gender||'m',at:Date.now()};ls.set(END_KEY,got);
   ls.del(SAVE_KEY);render();
 }
 function save(){ls.set(SAVE_KEY,S)}
+
+/* ───────── 엔딩 도트 그림 (24×24) ───────── */
+const PX={K:'#1b1b1f',W:'#f4f4f0',S:'#f1c7a0',E:'#1b1b1f',Y:'#f2c94c',R:'#d94a3a',G:'#4caf6a',g:'#2f7a4a',B:'#3a6fd8',b:'#1e2a5a',
+  N:'#8a5a34',n:'#5c3b22',L:'#c9ccd1',D:'#5a5e66',O:'#f08a2c',P:'#8a46c2',p:'#e57aa5',C:'#8fd3e8',T:'#d8b47a',Z:'#e6b422',H:'#3a2a20',
+  U:'#3a6fd8',V:'#2c3e66',F:'#2a2a2a'};
+const BODY_M=['..HHHH..','.HHHHHH.','.HSSSSH.','.SESSES.','.SSSSSS.','..SSSS..','.UUUUUU.','UUUUUUUU','SUUUUUUS','SUUUUUUS','.UUUUUU.','.VV..VV.','.VV..VV.','.FF..FF.'];
+const BODY_F=['..HHHH..','.HHHHHH.','HHSSSSHH','HSESSESH','HSSSSSSH','HHSSSSHH','.UUUUUU.','UUUUUUUU','SUUUUUUS','SUUUUUUS','.UUUUUU.','.VV..VV.','.VV..VV.','.FF..FF.'];
+const KID=['.HH.','HSSH','.SS.','pppp','SppS','.pp.','.VV.','.FF.'];
+const DOG=['....NN','NNNNNK','NNNNN.','N.N.N.'];
+const FRIEND=c=>['.HH.','HSSH','.SS.',c+c+c+c,'S'+c+c+'S','.'+c+c+'.','.VV.','.FF.'];
+/* 장면: bg=[하늘, 바닥], U/V/F/H=옷·바지·신발·머리색, bald, py=사람 y, hat/over=[dx,dy,rows] 사람 기준, props=[x,y,rows] 절대 좌표, deco */
+const SCENES={
+ astro:{bg:['#0e1530','#7d8296'],U:'#f4f4f0',V:'#f4f4f0',F:'#c9ccd1',deco:'stars',over:[[-1,-1,['..CCCCCC..','.C......C.','C........C','C........C','C........C','.C......C.','..CCCCCC..']]],props:[[18,2,['.BB.','BGBB','BBGB','.BB.']],[3,13,['KRRR','KRRR','K...','K...','K...','K...','K...','K...']]]},
+ ren:{bg:['#efe4cf','#b98a5c'],U:'#2f62cf',props:[[2,18,['RRRR','BBBB','GGGG']],[19,5,['..KK','..K.','..K.','KKK.','KK..']],[17,15,['.TTT.','TRTBT','TTGTT','.TTT.']]]},
+ ord:{bg:['#cfe6f2','#7fb069'],U:'#e29a4a',props:[[0,14,['..RRR..','.RRRRR.','RRRRRRR','.WWWWW.','.WnWBW.','.WnWWW.','.WnWWW.']],[19,2,['.YY.','YYYY','YYYY','.YY.']]]},
+ rest:{bg:['#f6b98a','#c98a5a'],U:'#9fb8c8',V:'#9fb8c8',props:[[1,19,['..OOOO..','.OOOOOO.']],[18,17,['WWW.','WWWW','WWW.']],[17,4,['KKK.','..K.','.K..','KKK.']]]},
+ fam:{bg:['#dff1e2','#88c27f'],U:'#3a6fd8',props:[[18,14,KID],[1,18,DOG],[17,5,['.R.R.','RRRRR','.RRR.','..R..']]]},
+ friends:{bg:['#ffe7c2','#a7c97a'],U:'#d24f33',deco:'lights',props:[[2,14,FRIEND('B')],[18,14,FRIEND('G')]]},
+ ceo:{bg:['#cfd9e8','#59606b'],U:'#22283a',V:'#22283a',over:[[3,6,['RR','RR','.R']]],props:[[0,14,['..DD...','..DW...','DDDD.DD','DWDD.DW','DDDWDDD','DWDDDWD','DDDDDDD']],[17,4,['.....G','....GG','...G.G','G.G...','.G....']]]},
+ vet:{bg:['#e3f1ef','#b8d6cf'],U:'#f4f4f0',V:'#5a6b8c',over:[[2,6,['K..K','.KK.']]],props:[[17,18,DOG],[19,3,['.G.','GGG','.G.']]]},
+ bidle:{bg:['#1c1e26','#2c2f3a'],U:'#6b6f7a',V:'#4a4d55',props:[[17,13,['CCCCC','CCCCC','CCCCC','..D..','.DDD.']],[2,18,['RR','WW','WW']],[4,19,['RR','WW']]]},
+ blone:{bg:['#1a2027','#2a3038'],U:'#4a5560',V:'#3a424c',props:[[2,4,['LLLLL','LbbbL','LbWbL','LbbbL','LLLLL']],[18,18,['KKK','KCK','KKK']],[2,19,['WWW.','WWWW']]]},
+ bdebt:{bg:['#e2ddd6','#9c968c'],U:'#7a7f8a',props:[[1,13,['WWWW','LLLL','WWWW','LLLL','WWWW','LLLL','WWWW','LLLL']],[19,3,['RR','RR','RR','..','RR']],[17,14,['RRRR','WWWW','WRWW','WWWW']]]},
+ blost:{bg:['#6f7d8c','#4b5563'],U:'#5c6bc0',deco:'rain',props:[[18,15,['Z..Z','ZZ.Z','.ZZ.','..Z.','.ZZZ']]]},
+ bempty:{bg:['#0f1726','#3a3f4b'],U:'#1e2230',V:'#1e2230',deco:'city',props:[[17,17,['..Y..','..W..','ppppp','WWWWW']]]},
+ i:{bg:['#f3ecd8','#a3896b'],U:'#f4f4f0',over:[[3,6,['RR','ZZ']]],props:[[18,15,['.WW.','.WW.','WGGW','GGGG','.GG.']],[2,4,['.B.B.','BBBBB','.BYB.','BBBBB','.B.B.']]]},
+ p:{bg:['#cfe8ff','#7fb069'],U:'#d24f33',py:5,over:[[3,6,['RR','ZZ']]],props:[[5,19,['ZZZZZZZZZZZZZ','ZZZZZZKZZZZZZ','ZZZZZZKZZZZZZ','ZZZZZZZZZZZZZ']],[2,3,['.YY.','YYYY','.YY.']]]},
+ d:{bg:['#e8e2f2','#8a7a9a'],U:'#8b7419',over:[[0,2,['.CCKCC..']]],props:[[2,6,['.L.L.','LLLLL','.LDL.','LLLLL','.L.L.']],[17,14,['.LLL.','LCLCL','.LLL.','LLLLL','L.L.L']]]},
+ a:{bg:['#2a1f3d','#f4f4f0'],U:'#1b1b1f',V:'#1b1b1f',deco:'piano',over:[[3,6,['WW']]],props:[[16,10,['..W','.W.','W..']],[2,4,['..YY','..Y.','YYY.','YY..']],[19,6,['.YY','.Y.','YY.']]]},
+ c:{bg:['#3a1c4f','#5a2d6f'],U:'#cc3f78',deco:'spot',props:[[16,14,['KK','KK','.K','.K']]]},
+ w:{bg:['#e9efe4','#9fae8f'],U:'#8a8f86',V:'#8a8f86',bald:1,props:[[17,10,['..N..','.NNN.','.NNN.','NNNNN']],[2,10,['..g..','.ggg.','ggggg','.ggg.','ggggg','..n..','..n..']]]},
+ ip:{bg:['#dbeefa','#f4f4f0'],U:'#f08a2c',V:'#2c3e66',H:'#f4f4f0',deco:'snow',props:[[18,16,['.KK.','KWWK','KWWK','KWWK','.YY.']]]},
+ id:{bg:['#dff3ef','#a9cfc6'],U:'#3c9d7a',V:'#3c9d7a',H:'#3c9d7a',over:[[1,4,['LLLLLL']]],props:[[17,2,['LLLL','.YY.']],[18,16,['L...','.L..','..K.']]]},
+ ia:{bg:['#efe6d2','#7a5a3c'],U:'#8a46c2',props:[[2,16,['RRRR','BBBB','GGGG','YYYY','RRRR']],[18,12,['YYY.','YYYY','.N..','.N..','NNN.']]]},
+ ic:{bg:['#e7e2d6','#6b4f3a'],U:'#22283a',V:'#22283a',over:[[3,6,['WW','WW']]],props:[[17,6,['..K..','KKKKK','Z.K.Z','Z.K.Z','..K..','.KKK.']]]},
+ iw:{bg:['#1f3b2e','#7a5a3c'],U:'#3a6fd8',props:[[1,2,['W.W.WW..W','.W..W.W.W','W.W.WW..W']],[14,3,['WWW.W','..W.W','WWW.W']],[2,8,['WWWW.WW']]]},
+ pd:{bg:['#f2d16b','#6b4f3a'],U:'#1b1b1f',V:'#1b1b1f',props:[[17,12,['KWKWK','KKKKK','KWWWK','KKKKK']],[2,4,['..R..','.ROR.','ROYOR','.ROR.','..R..']]]},
+ pa:{bg:['#241a35','#3d2c55'],U:'#bd8ae8',V:'#bd8ae8',deco:'spot',over:[[-1,6,['S........S']],[-1,7,['S........S']]]},
+ pc:{bg:['#cfe8ff','#4caf6a'],U:'#d24f33',V:'#f4f4f0',over:[[0,8,['Y']],[3,8,['WW']]],props:[[17,19,['WKW','KWK','WKW']]]},
+ pw:{bg:['#ffd9b0','#5a5e66'],U:'#2a2f3a',V:'#2a2f3a',H:'#d94a3a',over:[[0,9,['YYYYYYYY']],[-1,1,['RRRRRRRRRR']]],props:[[18,14,['..R..','.ROR.','ROYOR','ROYOR','.RRR.']]]},
+ da:{bg:['#f2e3cf','#b98a5c'],U:'#8a5a34',props:[[17,14,['.NN.','NnnN','NNNN','NNNN','.NN.']],[16,19,['LLLLLL']]]},
+ dc:{bg:['#fdf1e1','#c9ccd1'],U:'#f4f4f0',over:[[0,-3,['..WWWW..','.WWWWWW.','.WWWWWW.','..WWWW..']]],props:[[17,15,['DDDD...','DDDDDDD','.DDD...']],[17,12,['.L.L','L.L.']]]},
+ dw:{bg:['#efe4cf','#8a5a34'],U:'#6b8f71',props:[[17,14,['N...','N...','N...','NNNN','N..N','N..N','N..N']],[2,18,['nnnn','NNNN']]]},
+ ac:{bg:['#2a1f1f','#5c3b22'],U:'#1b1b1f',V:'#1b1b1f',deco:'curtain',over:[[3,6,['WW']]],props:[[18,14,['ZZZ','.Z.','.Z.','ZZZ']]]},
+ aw:{bg:['#f6efe2','#b98a5c'],U:'#2f62cf',over:[[0,-1,['.RRRRRR.','RRRRRRRR']]],props:[[16,9,['LLLLLLL','LBYGRBL','LBBGGYL','LYYRRBL','LLLLLLL','.N...N.','N.....N']]]},
+ cw:{bg:['#dfeaf5','#8a8f86'],U:'#22283a',V:'#22283a',over:[[1,6,['Z.....','.Z....','..Z...','...Z..','....Z.']]],props:[[2,7,['.YY.','.YY.','..K.','..K.','..K.','..K.','..K.','..K.','..K.','..K.','..K.','..K.','.KKK']]]}};
+function scene(id){
+  if(SCENES[id])return SCENES[id];
+  return {bg:['#e8ece6','#a8b2a4'],U:{i:'#2f62cf',p:'#d24f33',d:'#8b7419',a:'#8a46c2',c:'#cc3f78',w:'#17806f'}[id]||'#3a6fd8'};
+}
+const SPRITE_CACHE={};
+function sprite(id,gender){
+  const key=id+(gender||'m');if(SPRITE_CACHE[key])return SPRITE_CACHE[key];
+  if(typeof document==='undefined'||!document.createElement)return '';
+  let cv;try{cv=document.createElement('canvas')}catch(e){return ''}
+  if(!cv||!cv.getContext)return '';
+  cv.width=cv.height=24;const x=cv.getContext('2d');if(!x)return '';
+  const sc=scene(id),pal={...PX,U:sc.U||PX.U,V:sc.V||PX.V,F:sc.F||PX.F,H:sc.H||PX.H};
+  const dot=(px,py,ch)=>{if(px<0||py<0||px>23||py>23)return;const c=pal[ch];if(!c)return;x.fillStyle=c;x.fillRect(px,py,1,1)};
+  const put=(ox,oy,rows)=>rows.forEach((r,j)=>[...r].forEach((ch,i)=>{if(ch!=='.')dot(ox+i,oy+j,ch)}));
+  x.fillStyle=sc.bg[0];x.fillRect(0,0,24,24);x.fillStyle=sc.bg[1];x.fillRect(0,21,24,3);
+  const dk=sc.deco;
+  if(dk==='stars')[[2,2],[6,5],[11,1],[14,6],[21,9],[4,10],[20,14],[9,3]].forEach(([a,b])=>dot(a,b,'Y'));
+  if(dk==='snow')[[1,2],[5,6],[9,1],[13,4],[17,7],[21,3],[3,12],[20,11],[7,9],[15,10]].forEach(([a,b])=>dot(a,b,'W'));
+  if(dk==='rain')for(let k=0;k<14;k++){const a=(k*7)%24,b=(k*5)%20;dot(a,b,'C');dot(a+1,b+1,'C')}
+  if(dk==='lights')for(let a=1;a<24;a+=3)dot(a,2+(a%2),a%2?'Y':'R');
+  if(dk==='city'){x.fillStyle='#1d2638';x.fillRect(0,8,6,13);x.fillRect(18,5,6,16);[[1,10],[3,12],[1,15],[4,17],[19,7],[21,9],[19,12],[22,14],[20,17]].forEach(([a,b])=>dot(a,b,'Y'))}
+  if(dk==='spot'){x.fillStyle='rgba(255,240,180,.18)';for(let r=0;r<21;r++){const w=4+Math.floor(r/2);x.fillRect(12-w/2,r,w,1)}}
+  if(dk==='piano'){for(let a=0;a<24;a+=2){dot(a,21,'K');dot(a,22,'K')}}
+  if(dk==='curtain'){x.fillStyle='#a8323a';x.fillRect(0,0,4,21);x.fillRect(20,0,4,21);x.fillStyle='#d94a3a';x.fillRect(1,0,1,21);x.fillRect(22,0,1,21)}
+  const py=sc.py!=null?sc.py:8,pxx=8;
+  let body=(gender==='f'?BODY_F:BODY_M).slice();
+  if(sc.bald)body=BODY_M.map(r=>r.replace(/H/g,'S'));
+  put(pxx,py,body);
+  (sc.over||[]).forEach(([a,b,r])=>put(pxx+a,py+b,r));
+  (sc.props||[]).forEach(([a,b,r])=>put(a,b,r));
+  return SPRITE_CACHE[key]=cv.toDataURL('image/png');
+}
+function spriteImg(id,gender,size,cls){const u=sprite(id,gender);return u?`<img class="${cls||'sprite'}" src="${u}" width="${size}" height="${size}" alt="">`:''}
 
 /* ───────── 그리기 ───────── */
 function ruler(){
@@ -936,6 +1021,7 @@ function endingScreen(){
   }
   const wins=S.log.filter(l=>l.v===true).length, tries=S.log.filter(l=>l.v!==null).length;
   return ruler()+`<section class="sheet fade">
+   <div class="portrait">${spriteImg(E.id,S.gender,192)}</div>
    <div class="ending-head"><span class="ending-no">${E.bad?'<span class="badmark">BAD END</span> ':''}엔딩 No.${String(idx).padStart(2,'0')} · 45세의 ${esc(S.name)}</span><h1>${E.n}</h1></div>
    <div class="ending-grid"><div style="display:flex;flex-direction:column;gap:14px;min-width:0">
     <p class="story">${esc(fill(E.x))}</p>${fam?`<p class="story">${esc(fill(fam))}</p>`:''}<p class="story" style="color:var(--muted)">${coda}</p>
@@ -950,7 +1036,7 @@ function collection(){
   const got=ls.get(END_KEY)||{};
   return `<section class="sheet fade"><div class="eyebrow">엔딩 도감</div><h2>지금까지 만난 어른들</h2>
    <p class="counter">${Object.keys(got).length} / ${ENDINGS.length}</p>
-   <div class="coll">${ENDINGS.map((e,i)=>{const g=got[e.id];return `<div class="card ${g?'got':'locked'}"><span class="ch">No.${String(i+1).padStart(2,'0')}</span><span class="cn">${g?e.n:'？？？'}</span>${g?`<span class="ch">${esc(g.name)}의 엔딩</span><span class="hint">${esc(hintOf(e.id))}</span>`:''}</div>`}).join('')}</div>
+   <div class="coll">${ENDINGS.map((e,i)=>{const g=got[e.id];return `<div class="card ${g?'got':'locked'}"><span class="ch">No.${String(i+1).padStart(2,'0')}</span>${g?spriteImg(e.id,g.gender,96,'thumb'):'<div class="thumb locked-thumb" aria-hidden="true">?</div>'}<span class="cn">${g?e.n:'？？？'}</span>${g?`<span class="ch">${esc(g.name)}의 엔딩</span><span class="hint">${esc(hintOf(e.id))}</span>`:''}</div>`}).join('')}</div>
    <button class="btn ghost" data-a="back">돌아가기</button></section>`;
 }
 

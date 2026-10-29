@@ -1,0 +1,1091 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="0세부터 45세까지, 선택이 쌓여 한 사람의 인생이 됩니다. 34가지 엔딩의 인생 성장 시뮬레이션.">
+<title>45년</title>
+<link rel="preload" href="fonts/NeoDunggeunmo.woff" as="font" type="font/woff" crossorigin>
+<style>
+/* 기본 리셋 */
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+@font-face{font-family:"NeoDunggeunmo";src:url("fonts/NeoDunggeunmo.woff") format("woff");font-display:block}
+/* Layout: 문틀에 연필로 키를 재던 자국 — 상단 '키재기 자'가 나이를 따라 자라고, 그 아래 종이 한 장에 이야기가 놓인다 */
+:root{
+  --wall:#e6ebe3; --paper:#fbfcf8; --ink:#22282a; --muted:#646e68; --line:#cdd5ca;
+  --pencil:#4a5055; --mark:#f1c84b; --accent:#2c55c4; --accent-ink:#ffffff;
+  --st-i:#2f62cf; --st-p:#d24f33; --st-d:#8b7419; --st-a:#8a46c2; --st-c:#cc3f78; --st-w:#17806f;
+  --good:#1f7a4d; --bad:#b4442f;
+  --f-hand:"NeoDunggeunmo","Apple SD Gothic Neo","Malgun Gothic",monospace;
+  --f-story:"NeoDunggeunmo","Apple SD Gothic Neo","Malgun Gothic",monospace;
+  --f-ui:"NeoDunggeunmo","Apple SD Gothic Neo","Malgun Gothic",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --wall:#151a19; --paper:#1f2524; --ink:#e7ece5; --muted:#9aa49d; --line:#344039;
+  --pencil:#b9c0bb; --mark:#e0b53b; --accent:#7c9cf5; --accent-ink:#0f1420;
+  --st-i:#7ea2f2; --st-p:#f08467; --st-d:#d0b55a; --st-a:#bd8ae8; --st-c:#ef7ba7; --st-w:#4fc3ad;
+  --good:#5cc78f; --bad:#f08467; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --wall:#151a19; --paper:#1f2524; --ink:#e7ece5; --muted:#9aa49d; --line:#344039;
+  --pencil:#b9c0bb; --mark:#e0b53b; --accent:#7c9cf5; --accent-ink:#0f1420;
+  --st-i:#7ea2f2; --st-p:#f08467; --st-d:#d0b55a; --st-a:#bd8ae8; --st-c:#ef7ba7; --st-w:#4fc3ad;
+  --good:#5cc78f; --bad:#f08467; color-scheme:dark}
+
+html,body{min-height:100%}
+body{background:var(--wall);color:var(--ink);font-family:var(--f-ui);font-size:16px;line-height:1.65;word-break:keep-all;overflow-wrap:break-word;line-break:strict;-webkit-font-smoothing:none;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+button{font:inherit;color:inherit;cursor:pointer;word-break:keep-all}
+p,.ct,.td,.howto div,.story{text-wrap:pretty}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.masthead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--f-hand);font-size:28px;font-weight:400;line-height:1.1}
+.brand small{font-size:13px;color:var(--muted);margin-left:8px;white-space:nowrap}
+.linkbtn{background:none;border:0;color:var(--muted);font-size:13px;text-decoration:underline;text-underline-offset:3px;padding:4px}
+
+/* 키재기 자 */
+.ruler{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:10px 12px 4px;overflow:hidden}
+.ruler svg{display:block;width:100%;height:auto}
+.ruler text{font-family:var(--f-hand)}
+
+.sheet{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:28px clamp(18px,5vw,40px);display:flex;flex-direction:column;gap:20px;min-width:0}
+.eyebrow{font-size:13px;letter-spacing:.04em;color:var(--muted);font-weight:600;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.eyebrow .age{font-size:22px;letter-spacing:0;color:var(--ink);font-weight:400}
+h1,h2{font-family:var(--f-story);font-weight:400;text-wrap:balance;margin:0;line-height:1.35}
+h1{font-size:clamp(28px,7.5vw,40px)}
+h2{font-size:clamp(22px,5.6vw,28px)}
+.story{font-size:17px;line-height:1.9;margin:0;max-width:40em}
+.story + .story{margin-top:-6px}
+.hand{font-size:19px;line-height:1.5}
+
+.choices{display:flex;flex-direction:column;gap:10px}
+.choice{text-align:left;background:transparent;border:1.5px solid var(--line);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;transition:border-color .15s,background .15s,transform .15s}
+.choice:hover{border-color:var(--ink);transform:translateX(3px)}
+.choice .ct{font-size:16px;line-height:1.5}
+.choice .meta{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:13px;padding:1px 8px;border-radius:999px;border:1px solid currentColor;line-height:1.6;white-space:nowrap}
+.tag.i{color:var(--st-i)}.tag.p{color:var(--st-p)}.tag.d{color:var(--st-d)}.tag.a{color:var(--st-a)}.tag.c{color:var(--st-c)}.tag.w{color:var(--st-w)}
+.tag.j{color:var(--muted)}
+.tag.check{color:var(--ink);border-style:dashed}
+
+.btn{background:var(--ink);color:var(--paper);border:0;border-radius:6px;padding:12px 22px;font-size:16px;align-self:flex-start;max-width:100%;text-align:center}
+.btn:hover{opacity:.88}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* 능력치 */
+.stats{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:14px 16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 18px}
+@media (max-width:520px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{display:flex;flex-direction:column;gap:3px;min-width:0}
+.stat .top{display:flex;justify-content:space-between;align-items:baseline;gap:4px;font-size:14px;white-space:nowrap}
+.stat .v{font-variant-numeric:tabular-nums;font-size:18px}
+.bar{height:7px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:4px;transition:width .5s ease}
+.joy{grid-column:1/-1;display:flex;align-items:center;gap:10px;font-size:14px;white-space:nowrap;padding-top:6px;border-top:1px dashed var(--line)}
+.joy .bar{flex:1}
+.joy .face{font-size:15px;color:var(--muted);text-align:right}
+.traits{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}
+.trait-chip.fam{background:transparent;border:1px solid var(--mark);color:var(--ink)}
+.trait-chip{font-size:13px;padding:2px 9px;border-radius:4px;background:var(--wall);color:var(--muted);font-weight:500}
+
+/* 결과 */
+.outcome{border-left:3px solid var(--mark);padding:4px 0 4px 16px;display:flex;flex-direction:column;gap:10px}
+.verdict{font-size:24px;line-height:1.3;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.verdict.ok{color:var(--good)}.verdict.ng{color:var(--bad)}
+.deltas{display:flex;gap:6px;flex-wrap:wrap}
+
+/* 시작 화면 */
+.field{display:flex;flex-direction:column;gap:6px;max-width:320px}
+.field label{font-size:14px;color:var(--muted)}
+.field .lbl{font-size:14px;color:var(--muted)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg-btn{background:transparent;border:1.5px solid var(--line);border-radius:6px;padding:10px 12px;font-size:17px}
+.seg-btn[aria-checked="true"]{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.field input{font:inherit;font-size:24px;width:100%;box-sizing:border-box;padding:8px 12px;border:1.5px solid var(--line);border-radius:6px;background:transparent;color:var(--ink)}
+.howto{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;font-size:14px;line-height:1.7;color:var(--muted)}
+@media (max-width:560px){.howto{grid-template-columns:1fr}}
+.howto b{display:block;color:var(--ink);font-size:16px;font-weight:400;margin-bottom:4px}
+
+/* 특성 */
+.trait-pick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.trait-pick{grid-template-columns:1fr}}
+.trait{text-align:left;background:transparent;border:1.5px solid var(--line);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.trait:hover{border-color:var(--ink)}
+.trait .tn{font-size:20px;line-height:1.3}
+.trait .td{font-size:14px;color:var(--muted)}
+.recap{display:flex;gap:6px;flex-wrap:wrap}
+
+/* 엔딩 */
+.ending-head{display:flex;flex-direction:column;gap:6px}
+.ending-no{font-size:16px;color:var(--muted)}
+.badmark{color:var(--bad);border:1px solid var(--bad);border-radius:4px;padding:0 6px;margin-right:4px}
+.ending-grid{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:24px;align-items:start}
+@media (max-width:600px){.ending-grid{grid-template-columns:1fr}}
+.radar text{font-family:var(--f-ui);font-size:11px}
+.log{max-height:320px;overflow:auto;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.6}
+.log div{display:grid;grid-template-columns:3em minmax(0,1fr);gap:8px}
+.log b{font-weight:400;color:var(--ink)}
+.log .a{color:var(--muted)}
+details summary{cursor:pointer;font-size:15px}
+
+.coll{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{border:1.5px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:4px;min-height:92px}
+.card.got{border-color:var(--ink)}
+.card .cn{font-size:16px;line-height:1.4}
+.card .hint{font-size:13px;line-height:1.55;color:var(--ink);border-top:1px dashed var(--line);padding-top:6px;margin-top:2px}
+.card .ch{font-size:13px;color:var(--muted);line-height:1.5}
+.card.locked .cn{color:var(--muted)}
+.counter{font-size:18px}
+
+.settings{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.set-head{display:flex;justify-content:space-between;align-items:center}
+.set-head h3{margin:0;font-size:18px;font-weight:400}
+.set-row{display:grid;grid-template-columns:4.5em minmax(0,1fr) 3.2em auto;gap:10px;align-items:center;font-size:15px}
+.set-row input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+.set-row output{font-variant-numeric:tabular-nums;color:var(--muted);text-align:right}
+.mini{background:transparent;border:1.5px solid var(--line);border-radius:6px;padding:4px 10px;font-size:13px}
+.set-note{margin:0;font-size:13px;color:var(--muted)}
+.save-note{margin:0;font-size:14px;color:var(--muted)}
+.undo-btn{position:absolute;top:12px;right:12px;width:40px;height:40px;display:grid;place-items:center;background:transparent;border:1.5px solid var(--line);border-radius:6px;color:var(--muted);padding:0}
+.undo-btn:hover{color:var(--ink);border-color:var(--ink)}
+.sheet:has(.undo-btn) .eyebrow{padding-right:44px}
+.fade{animation:fade .35s ease both}
+@keyframes fade{from{opacity:.001;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (max-width:480px){
+  body{font-size:15px}
+  .sheet{padding:22px 16px;gap:18px}
+  .story{font-size:16px;line-height:1.85}
+  .choice{padding:13px 14px}
+  .choice .ct{font-size:15.5px}
+  .btn{align-self:stretch}
+  .row>.btn{flex:1 1 100%}
+  .row .counter{width:100%}
+  .stats{padding:12px;gap:10px 14px}
+  .joy .face{font-size:14px}
+  .brand{font-size:24px}
+  .brand small{display:block;margin:4px 0 0}
+  .ruler{padding:8px 8px 2px}
+}
+@media (prefers-reduced-motion:reduce){.fade{animation:none}.choice,.bar>i{transition:none}}
+.confirm{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:15px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ───────── 기본 데이터 ───────── */
+const STATS=[
+  {k:'i',n:'지능'},{k:'p',n:'운동'},{k:'d',n:'손재주'},
+  {k:'a',n:'감성'},{k:'c',n:'매력'},{k:'w',n:'의지'}];
+const SN=Object.fromEntries(STATS.map(s=>[s.k,s.n]));
+const STAGES=[
+  {name:'아기 시절',from:0,to:6,n:7},
+  {name:'초등학생',from:7,to:12,n:10},
+  {name:'청소년기',from:13,to:19,n:10},
+  {name:'청년기',from:20,to:29,n:9},
+  {name:'어른의 시간',from:30,to:45,n:9}];
+const TEMPERS=[
+  {k:'i',n:'눈이 반짝이는 아기',d:'무엇이든 오래 들여다본다.'},
+  {k:'p',n:'발길질이 힘찬 아기',d:'잠시도 가만히 있지 않는다.'},
+  {k:'d',n:'손이 야무진 아기',d:'작은 것도 꼭 쥐고 놓지 않는다.'},
+  {k:'a',n:'노래에 반응하는 아기',d:'음악이 나오면 울음을 그친다.'},
+  {k:'c',n:'방긋 웃는 아기',d:'처음 보는 사람에게도 웃어 준다.'},
+  {k:'w',n:'잘 울지 않는 아기',d:'넘어져도 금방 다시 일어난다.'}];
+const TRAITS=[
+  {id:'bw',n:'책벌레',d:'지능이 오를 때마다 +1',s:'i'},
+  {id:'rn',n:'새벽 달리기',d:'운동이 오를 때마다 +1',s:'p'},
+  {id:'mk',n:'만들기 상자',d:'손재주가 오를 때마다 +1',s:'d'},
+  {id:'dy',n:'일기 쓰기',d:'감성이 오를 때마다 +1',s:'a'},
+  {id:'sc',n:'사람 좋아',d:'매력이 오를 때마다 +1',s:'c'},
+  {id:'gr',n:'끈기',d:'의지가 오를 때마다 +1',s:'w'},
+  {id:'op',n:'낙천가',d:'행복이 오르면 +2, 떨어질 땐 절반만'},
+  {id:'lk',n:'행운아',d:'모든 판정 성공 확률 +15%'},
+  {id:'vs',n:'호기심 대장',d:'선택할 때마다 무작위 능력치 +1'},
+  {id:'fc',n:'몰입',d:'한 번에 가장 크게 오른 능력치 +2'}];
+
+/* 습관 이름은 얻는 나이에 맞게 바뀐다: [6세, 12세, 19세, 29세] */
+const TRAIT_NAMES={
+  bw:['그림책 사랑','책벌레','책벌레','퇴근 후 독서'],
+  rn:['뛰어놀기 대장','줄넘기 연습','새벽 달리기','새벽 달리기'],
+  mk:['블록 쌓기','만들기 상자','공구함','주말 공방'],
+  dy:['그림일기','일기 쓰기','일기 쓰기','기록하는 습관'],
+  sc:['인사 잘하는 아이','친구 많은 아이','사람 좋아','사람 좋아'],
+  gr:['끝까지 해 보기','끈기','끈기','끈기'],
+  op:['잘 웃는 아이','낙천가','낙천가','낙천가'],
+  lk:['네잎클로버','행운아','행운아','행운아'],
+  vs:['"왜요?" 대장','호기심 대장','호기심 대장','호기심 대장'],
+  fc:['한 가지에 푹 빠지기','몰입','몰입','몰입']};
+function tn(id,stage){
+  if(stage==null)stage=S&&S.traitAt&&S.traitAt[id]!=null?S.traitAt[id]:2;
+  return (TRAIT_NAMES[id]||[])[Math.min(3,stage)]||TRAITS.find(t=>t.id===id).n}
+/* 이벤트: c(선택지) = {t, fx, r} 또는 {t, chk, dc, ok:{fx,r}, ng:{fx,r}} */
+const EV=[
+/* ── 0 아기 시절 ── */
+{s:0,t:'첫 장난감',x:'백일 선물로 받은 상자에서 딸랑이, 나무 블록, 헝겊 그림책이 나왔다. {N}의 작은 손이 하나를 향해 뻗는다.',c:[
+ {t:'딸랑이를 흔든다',fx:{a:2,j:3},r:'딸랑딸랑. 소리에 맞춰 두 발을 구르며 까르르 웃는다.'},
+ {t:'나무 블록을 만지작거린다',fx:{d:2,i:1},r:'블록을 이리저리 돌려 보다가 하나 위에 하나를 올리는 법을 깨친다.'},
+ {t:'헝겊 그림책을 붙잡는다',fx:{i:2,a:1},r:'알록달록한 그림을 한참 들여다본다. 책장 넘기는 소리가 좋다.'}]},
+{s:0,t:'첫 걸음',x:'돌잔치를 일주일 앞둔 저녁, {N}이(가) 소파 모서리를 붙잡고 몸을 일으킨다. 거실의 모든 눈이 쏠렸다.',c:[
+ {t:'손을 놓고 앞으로 걸어 본다',chk:'p',dc:6,ok:{fx:{p:3,j:3},r:'한 걸음, 두 걸음, 세 걸음! 거실에 박수가 터진다.'},ng:{fx:{p:1,w:2},r:'엉덩방아. 잠깐 울먹이다가 다시 소파를 붙잡는다.'}},
+ {t:'엄마 아빠 품으로 기어간다',fx:{c:2,j:2},r:'걷기는 다음으로 미루고 가장 따뜻한 곳으로 직행했다.'},
+ {t:'앉아서 사람들을 구경한다',fx:{i:1,a:1},r:'모두가 왜 손뼉을 치는지 궁금한 얼굴로 바라본다.'}]},
+{s:0,t:'첫 단어',x:'옹알이가 점점 말이 되어 간다. 오늘 아침, {N}의 입에서 처음으로 또렷한 소리가 나왔다.',c:[
+ {t:'"엄마!"',fx:{c:2,j:2},r:'가족 단톡방이 하루 종일 시끄러웠다.'},
+ {t:'"이거 뭐야?"',fx:{i:3},r:'그날부터 집 안의 모든 물건에 이름을 물어보기 시작했다.'},
+ {t:'"라라라~"',fx:{a:3},r:'첫 단어가 노래였다. 할머니는 가수가 될 거라고 장담했다.'}]},
+{s:0,t:'모래 놀이터',x:'아파트 놀이터 모래밭. 플라스틱 삽과 양동이를 든 아이들이 모여 있다.',c:[
+ {t:'모래성을 쌓는다',fx:{d:3},r:'물을 조금 섞으면 모래가 단단해진다는 걸 혼자 알아냈다.'},
+ {t:'미끄럼틀을 스무 번 탄다',fx:{p:3,j:1},r:'계단을 오를 때마다 다리가 튼튼해진다.'},
+ {t:'옆 아이에게 삽을 빌려준다',fx:{c:3,j:1},r:'처음 보는 아이와 나란히 앉아 같이 땅을 판다. 첫 친구다.'}]},
+{s:0,t:'벽 위의 크레파스',x:'새로 산 크레파스 24색. 하얀 거실 벽이 유난히 넓어 보인다.',c:[
+ {t:'벽에 커다란 그림을 그린다',fx:{a:3,j:2,w:-1},r:'크게 혼났지만, 그 그림은 휴대폰 사진첩에 오래 남았다.'},
+ {t:'스케치북에만 그린다',fx:{a:1,w:2},r:'선 밖으로 나가지 않으려고 혀를 내밀고 집중한다.'},
+ {t:'크레파스 껍질을 다 벗긴다',fx:{d:2,i:1},r:'눕혀서 칠하면 넓게 칠해진다는 발견을 했다.'}]},
+{s:0,t:'어린이집 첫날',x:'처음 보는 교실, 처음 보는 선생님. 엄마가 문 앞에서 손을 흔든다.',c:[
+ {t:'엉엉 운다',fx:{a:1,j:-2,c:1},r:'선생님 품에서 울다 잠들었다. 깨어나니 간식이 있었다.'},
+ {t:'씩씩하게 손을 흔든다',fx:{w:3},r:'문이 닫히고 입술이 살짝 떨렸지만, 울지 않았다.'},
+ {t:'먼저 옆 친구에게 말을 건다',fx:{c:3},r:'"너 이름 뭐야?" 하원 시간엔 둘이 손을 잡고 나왔다.'}]},
+{s:0,t:'동물원 나들이',x:'주말 동물원. 기린, 원숭이, 코끼리가 차례로 나타난다.',c:[
+ {t:'기린 앞에서 질문을 퍼붓는다',fx:{i:3},r:'"목은 왜 길어? 잘 땐 어떻게 해?" 아빠가 휴대폰으로 검색을 시작했다.'},
+ {t:'원숭이 흉내를 낸다',fx:{p:2,c:1,j:2},r:'구경하던 다른 가족들까지 웃었다.'},
+ {t:'코끼리를 그림으로 그린다',fx:{a:2,d:1},r:'코가 다리보다 길게 그려졌지만, 표정만은 똑같았다.'}]},
+{s:0,t:'잠들기 전',x:'불을 끄기 직전, {N}이(가) 이불을 끌어안고 고개를 든다.',c:[
+ {t:'동화책을 한 권 더 읽어 달라고 한다',fx:{i:2,a:1},r:'세 번째 읽는 책인데도 마지막 장에서 눈이 반짝인다.'},
+ {t:'이불 속에서 상상 놀이를 한다',fx:{a:3},r:'이불은 동굴이 되고, 베개는 용이 되었다.'},
+ {t:'혼자 잠드는 연습을 한다',fx:{w:3},r:'무서운 그림자를 세어 보다가 어느새 잠들었다.'}]},
+{s:0,t:'블록 선물',x:'생일 선물로 큰 블록 세트를 받았다. 상자 안에는 두꺼운 설명서도 들어 있다.',c:[
+ {t:'설명서대로 차근차근 만든다',fx:{d:2,i:2},r:'3번 페이지에서 틀린 걸 스스로 찾아내 다시 만들었다.'},
+ {t:'마음대로 성을 짓는다',fx:{d:2,a:2},r:'설명서에는 없는, 탑이 일곱 개 달린 성이 완성됐다.'},
+ {t:'사촌과 같이 만든다',fx:{c:2,d:1,j:2},r:'싸울 뻔했지만 결국 다리 하나씩 나눠 맡기로 했다.'}]},
+{s:0,t:'감기',x:'밤새 열이 올랐다. 아침에 병원에서 받아 온 약이 숟가락 위에 놓여 있다.',c:[
+ {t:'쓴 약을 꿀꺽 삼킨다',fx:{w:3},r:'얼굴을 잔뜩 찡그렸지만 한 번에 삼켰다. 스티커를 받았다.'},
+ {t:'싫다고 떼를 쓴다',fx:{c:1,j:1},r:'다음 날부터 약은 딸기맛 시럽으로 바뀌었다.'},
+ {t:'누워서 창밖 구름을 본다',fx:{a:2,i:1},r:'구름 모양이 바뀌는 걸 하루 종일 지켜봤다.'}]},
+
+/* ── 1 초등학생 ── */
+{s:1,t:'받아쓰기 시험',x:'내일은 1학년 첫 받아쓰기. "닭", "읽다", "앉았다" 같은 겹받침이 잔뜩 나온다고 한다.',c:[
+ {t:'밤늦게까지 연습한다',fx:{i:2,w:2,gr:1},r:'100점. 선생님이 공책에 별 다섯 개를 그려 주셨다.'},
+ {t:'대충 보고 놀러 나간다',fx:{p:1,j:2},r:'70점. 그래도 놀이터에서 술래잡기는 1등이었다.'},
+ {t:'가족과 퀴즈처럼 맞히기 게임을 한다',fx:{i:2,c:1,j:1},r:'틀릴 때마다 아빠가 벌칙으로 춤을 췄다.'}]},
+{s:1,fix:1,t:'보호소에서 만난 눈',x:'가족과 함께 동네 유기동물 보호소에 봉사를 갔다. 구석 철창에서 강아지 한 마리와 새끼 고양이 한 마리가 나를 빤히 바라본다. 부모님이 말씀하셨다. "끝까지 책임질 수 있으면, 한 마리 데려가자."',c:[
+ {t:'강아지를 데려온다',fx:{j:5,w:1},on:s=>{s.pet={type:'dog',name:'',gen:1,alive:true}},r:'집에 오자마자 거실을 열 바퀴 뛰었다. 현관에서 나를 기다려 주는 가족이 생겼다.'},
+ {t:'고양이를 데려온다',fx:{j:5,a:1},on:s=>{s.pet={type:'cat',name:'',gen:1,alive:true}},r:'상자 안에서 사흘을 숨어 있던 {P}이(가), 나흘째 밤 내 이불 위에서 잠들었다.'},
+ {t:'아직은 책임질 자신이 없다',fx:{w:2,i:1},r:'대신 한 달에 한 번 보호소 봉사를 가기로 했다. 갈 때마다 이름을 불러 준다.'}]},
+{s:1,t:'방과후 수업',x:'방과후 수업 신청서가 나왔다. 한 가지만 고를 수 있다.',c:[
+ {t:'로봇 코딩',fx:{d:2,i:2},r:'바퀴 달린 로봇이 처음으로 명령대로 움직였다.'},
+ {t:'축구부',fx:{p:4},r:'무릎에 반창고가 늘어날수록 공이 발에 붙는다.'},
+ {t:'미술반',fx:{a:4},r:'수채화 물감이 번지는 모양이 신기해서 하늘만 열 장 그렸다.'},
+ {t:'연극반',fx:{c:2,a:2},r:'대사 세 줄짜리 나무 역할이었지만, 관객석에서 웃음이 나왔다.'}]},
+{s:1,t:'반장 선거',x:'3학년 2반 반장 선거. 친구가 "너 나가 봐" 하고 등을 떠민다.',c:[
+ {t:'출마해서 연설한다',chk:'c',dc:10,ok:{fx:{c:4,w:1,j:3},r:'"급식 줄을 공평하게!" 공약이 먹혔다. 반장 당선!'},ng:{fx:{c:1,w:2,j:-3},r:'두 표 차이로 떨어졌다. 집에 오는 길이 길었다.'}},
+ {t:'친한 친구를 추천한다',fx:{c:2,j:1},r:'친구가 반장이 되고, 부반장 자리는 자연스럽게 내 몫이 됐다.'},
+ {t:'관심 없다며 책을 읽는다',fx:{i:2},r:'선거가 끝날 때쯤 두꺼운 위인전 한 권을 다 읽었다.'}]},
+{s:1,t:'과학의 날',x:'과학의 날 행사. 물로켓 발사, 과학 상상화, 과학 독후감 중 하나에 참가해야 한다.',c:[
+ {t:'물로켓을 만들어 발사한다',chk:'d',dc:10,ok:{fx:{d:4,j:3},r:'페트병 로켓이 운동장 끝까지 날아갔다. 금상!'},ng:{fx:{d:2,w:1},r:'날개가 떨어져 제자리에서 빙글빙글. 그래도 이유를 알아냈다.'}},
+ {t:'바닷속 도시 상상화를 그린다',fx:{a:3,i:1},r:'투명한 관으로 연결된 해저 도시가 복도에 걸렸다.'},
+ {t:'과학 독후감을 쓴다',fx:{i:3},r:'우주에 관한 책을 읽다가 밤하늘을 보는 습관이 생겼다.'}]},
+{s:1,t:'놀림받는 친구',x:'쉬는 시간, 몇몇 아이들이 짝꿍의 안경을 빼앗고 놀리고 있다.',c:[
+ {t:'"그만해!" 하고 막아선다',fx:{w:3,c:1},r:'목소리가 떨렸지만 아이들은 안경을 돌려줬다.'},
+ {t:'선생님께 알린다',fx:{i:1,w:2},r:'다음 날 학급 회의가 열렸다. 짝꿍이 고맙다고 쪽지를 줬다.'},
+ {t:'나중에 조용히 위로한다',fx:{c:2,a:1},r:'같이 매점 빵을 나눠 먹었다. 둘은 단짝이 됐다.'}]},
+{s:1,t:'줄넘기 급수제',x:'체육 시간 줄넘기 급수제. 2단 뛰기 10번을 해야 3급이다.',c:[
+ {t:'2단 뛰기에 도전한다',chk:'p',dc:9,ok:{fx:{p:4,j:2},r:'열 번째 줄이 발밑을 지나갔다. 3급 통과!'},ng:{fx:{p:2,w:2},r:'일곱 번에서 걸렸다. 그날부터 매일 저녁 연습했다.'}},
+ {t:'친구들 줄을 세어 준다',fx:{c:2,i:1},r:'"하나, 둘, 셋!" 목소리 큰 심판이 인기 만점이었다.'},
+ {t:'줄넘기 손잡이를 고친다',fx:{d:3},r:'꼬인 줄을 풀고 손잡이를 다시 끼워 반 전체 줄넘기를 살렸다.'}]},
+{s:1,t:'첫 용돈 만 원',x:'처음으로 한 달 용돈 만 원을 받았다. 지갑이 두툼하다.',c:[
+ {t:'서점에서 책을 산다',fx:{i:2,a:1},r:'표지가 마음에 들어 고른 책이 인생 첫 시리즈물이 됐다.'},
+ {t:'만화책과 스티커를 산다',fx:{a:2,j:2},r:'필통 안이 화려해졌다.'},
+ {t:'돼지 저금통에 넣는다',fx:{w:3},r:'동전 소리가 묵직해질수록 뿌듯하다.'},
+ {t:'조립 키트를 산다',fx:{d:3},r:'모터가 달린 작은 선풍기가 완성됐다.'},
+ {t:'문방구 뽑기 기계에 전부 넣는다',fx:{j:3,w:-2,debt:1},r:'꽝, 꽝, 꽝. 마지막 한 판이면 나올 것 같았다. 다음 달 용돈까지 미리 당겨 썼다.'}]},
+{s:1,fix:1,lazy:1,need:s=>!!(s.pet&&s.pet.alive),t:'{P}와 보내는 하루',x:'{P}이(가) 우리 집에 온 지 1년. 이제 멀리서 들리는 내 발소리만 듣고도 현관 앞에 와 있다.',c:[
+ {t:'매일 아침 {P}와 함께 뛰어논다',fx:{p:2,j:2,b:1},r:'아침마다 놀이터를 한 바퀴. 덕분에 지각이 사라졌다.'},
+ {t:'{P}의 집을 직접 만들어 준다',fx:{d:3,b:1},r:'남은 나무판으로 지붕 달린 집을 만들었다. {P}은(는) 상자를 더 좋아했다.'},
+ {t:'{P} 관찰 일기를 쓴다',fx:{a:2,i:1,b:1},r:'잠버릇, 좋아하는 간식, 무서워하는 소리. 공책 한 권이 {P}로 가득 찼다.'}]},
+{s:1,t:'여름방학',x:'한 달짜리 여름방학이 시작됐다.',c:[
+ {t:'시골 할머니 댁에 간다',fx:{p:2,a:2,j:3},r:'개울에서 가재를 잡고, 마루에서 수박을 먹었다.'},
+ {t:'방학 특강 학원에 다닌다',fx:{i:3,w:1,j:-3,gr:2},r:'창밖 매미 소리를 들으며 문제집 두 권을 끝냈다.'},
+ {t:'집에서 게임을 실컷 한다',fx:{d:2,j:3,w:-1},r:'손가락이 빨라졌다. 엄마의 한숨도 늘었다.'}]},
+{s:1,t:'피아노 학원',x:'2년째 다닌 피아노 학원. 체르니 30번이 점점 어려워진다.',c:[
+ {t:'계속 다닌다',fx:{a:3,w:2},r:'처음으로 좋아하는 곡을 악보 없이 쳤다.'},
+ {t:'그만두고 태권도를 배운다',fx:{p:3,w:1},r:'노란 띠를 매고 첫 발차기를 했다.'},
+ {t:'그만두고 실컷 논다',fx:{j:3,c:1},r:'동네 친구들과 해가 질 때까지 뛰어놀았다.'}]},
+{s:1,t:'전학 가는 친구',x:'가장 친한 친구가 다음 주에 먼 도시로 이사를 간다고 한다.',c:[
+ {t:'긴 편지를 쓴다',fx:{a:2,c:1},r:'편지지 세 장을 꽉 채웠다. 몇 년 뒤 답장이 왔다.'},
+ {t:'마지막 날까지 같이 논다',fx:{j:3,c:1},r:'둘이 찍은 스티커 사진을 반으로 나눠 가졌다.'},
+ {t:'담담하게 보내 준다',fx:{w:2,a:1},r:'울지 않으려 했는데, 차가 떠난 뒤에야 눈물이 났다.'}]},
+{s:1,t:'고장 난 라디오',x:'창고에서 할아버지가 쓰던 낡은 라디오를 찾았다. 전원이 들어오지 않는다.',c:[
+ {t:'드라이버로 분해해서 고쳐 본다',chk:'d',dc:11,ok:{fx:{d:4,i:1,j:2},r:'끊어진 선을 이어 붙이자 지직거리며 노래가 나왔다!'},ng:{fx:{d:2,j:-1},r:'나사 세 개가 남았다. 라디오는 영영 조용해졌다.'}},
+ {t:'아빠에게 같이 고치자고 한다',fx:{c:1,d:1,i:1},r:'납땜하는 아빠 옆에서 회로가 뭔지 처음 배웠다.'},
+ {t:'라디오 안을 그림으로 남긴다',fx:{a:2,i:1},r:'부품 하나하나에 이름을 붙여 도감을 만들었다.'}]},
+{s:1,t:'학급 장기자랑',x:'학년 말 장기자랑. 모둠마다 하나씩 무대를 준비해야 한다.',c:[
+ {t:'아이돌 댄스를 춘다',fx:{p:2,c:2,j:2},r:'안무를 틀렸는데 그게 더 웃겨서 박수가 쏟아졌다.'},
+ {t:'카드 마술을 한다',fx:{d:2,c:2},r:'선생님이 카드를 뽑는 순간, 교실이 조용해졌다.'},
+ {t:'노래를 부른다',fx:{a:2,c:2},r:'떨리는 목소리로 시작했지만 후렴에선 다 같이 따라 불렀다.'},
+ {t:'사회를 본다',fx:{c:3,i:1},r:'순서가 꼬일 때마다 재치 있는 멘트로 메웠다.'}]},
+{s:1,t:'학급 문고 당번',x:'한 학기 동안 학급 문고 정리 당번을 맡았다. 책장은 엉망이다.',c:[
+ {t:'꽂힌 책을 다 읽어 버린다',fx:{i:3,a:1,gr:1},r:'학기 말엔 반에서 책을 가장 많이 읽은 아이가 되어 있었다.'},
+ {t:'대출 장부와 분류표를 만든다',fx:{d:2,i:1,w:1},r:'색깔 스티커로 장르를 나누자 반 아이들이 책을 찾기 쉬워졌다.'},
+ {t:'친구들에게 책을 추천해 준다',fx:{c:2,a:1},r:'"이거 진짜 재밌어." 그 말에 반 전체가 같은 책을 돌려 읽었다.'}]},
+
+/* ── 2 청소년기 ── */
+{s:2,t:'첫 중간고사',x:'중학교 첫 중간고사가 2주 앞으로 다가왔다. 과목이 아홉 개다.',c:[
+ {t:'시험 전날 벼락치기',fx:{i:2,j:-2,gr:1},r:'새벽 세 시까지 버텼다. 점수는 나쁘지 않았지만 머리가 띵했다.'},
+ {t:'2주 계획표를 짜서 지킨다',fx:{i:2,w:3,gr:3},r:'형광펜으로 지워 나가는 계획표가 은근히 재밌다.'},
+ {t:'시험보다 동아리에 집중한다',fx:{c:2,j:2},r:'성적표는 평범했지만, 동아리 선배들과 친해졌다.'},
+ {t:'시험 기간 내내 게임만 한다',fx:{j:4,i:-2,w:-2,idle:1,gr:-2},r:'랭크는 올랐다. 성적표는 부모님 서명란이 비어 있는 채로 가방 속에 숨었다.'}]},
+{s:2,t:'동아리 가입',x:'중학교 동아리 박람회. 부스마다 선배들이 목청을 높인다.',c:[
+ {t:'밴드부',fx:{a:3,c:1},r:'처음 잡아 본 베이스 기타. 손끝이 아프지만 소리가 멋지다.'},
+ {t:'농구부',fx:{p:4},r:'첫 연습 날 다리가 풀렸다. 그래도 슛 감각은 좋다는 말을 들었다.'},
+ {t:'과학 탐구반',fx:{i:3,d:1},r:'현미경 속 양파 세포를 처음 봤을 때 소름이 돋았다.'},
+ {t:'목공 메이커반',fx:{d:4},r:'첫 작품은 삐뚤어진 연필꽂이. 그래도 매일 쓴다.'}]},
+{s:2,t:'첫사랑',x:'같은 반 그 아이와 눈이 마주칠 때마다 심장이 이상하게 뛴다.',c:[
+ {t:'용기 내서 고백한다',chk:'c',dc:14,ok:{fx:{c:3,j:6},r:'"나도." 그 한마디에 세상이 환해졌다.'},ng:{fx:{a:3,w:2,j:-4},r:'"미안, 친구로 지내자." 그날 밤 처음으로 시를 썼다.'}},
+ {t:'편지를 써서 서랍에 넣어 둔다',fx:{a:3},r:'부치지 못한 편지가 서랍 안에 차곡차곡 쌓였다.'},
+ {t:'마음을 접고 공부에 집중한다',fx:{i:2,w:2,j:-1},r:'교과서 귀퉁이에 이름을 썼다가 지웠다.'}]},
+{s:2,t:'부모님과의 다툼',x:'"그래서 커서 뭐 할 건데?" 저녁 식탁에서 목소리가 높아졌다.',c:[
+ {t:'방문을 닫고 음악을 튼다',fx:{a:3,j:-1},r:'이어폰 속 노래 가사가 전부 내 얘기 같았다.'},
+ {t:'다음 날 다시 이야기를 청한다',fx:{c:2,w:2},r:'서로 몰랐던 걱정을 처음으로 털어놓았다.'},
+ {t:'운동장을 열 바퀴 뛴다',fx:{p:3,w:1},r:'숨이 턱까지 찼을 때 화도 같이 빠져나갔다.'},
+ {t:'몇 달째 말을 하지 않는다',fx:{w:1,j:-2,iso:2},r:'식탁에서도 이어폰을 뺐다 꼈다 할 뿐. 집이 하숙집처럼 조용해졌다.'}]},
+{s:2,t:'진로 상담',x:'담임 선생님과의 첫 진로 상담. "하고 싶은 게 있니?"',c:[
+ {t:'성적에 맞는 안정적인 길을 묻는다',fx:{i:2,w:1,gr:1},r:'선생님이 학과 목록을 출력해 주셨다.'},
+ {t:'좋아하는 일을 솔직히 말한다',fx:{a:2,w:2},r:'"그럼 그걸 잘하는 방법을 같이 찾아보자." 의외의 대답이었다.'},
+ {t:'아직 모르겠다고 말한다',fx:{j:2,c:1},r:'"모르는 게 당연해." 마음이 조금 가벼워졌다.'}]},
+{s:2,t:'대회 출전 기회',x:'학교 대표로 대회에 나갈 기회가 생겼다. 하나만 고를 수 있다.',c:[
+ {t:'수학 경시대회',chk:'i',dc:18,ok:{fx:{i:5,w:2,j:3},r:'마지막 문제를 시간 안에 풀어냈다. 은상!'},ng:{fx:{i:2,w:2},r:'두 문제를 남기고 시간이 끝났다. 풀이는 집에 와서 마저 했다.'}},
+ {t:'육상 대회 100m',chk:'p',dc:18,ok:{fx:{p:5,w:2,j:3},r:'결승선을 가장 먼저 끊었다. 시 대회 1위!'},ng:{fx:{p:2,w:2},r:'4등. 메달까지 0.2초였다.'}},
+ {t:'청소년 미술 공모전',chk:'a',dc:18,ok:{fx:{a:5,w:1,j:3},r:'출품작이 시립미술관에 걸렸다.'},ng:{fx:{a:2,w:2},r:'입선에 그쳤지만, 심사평 한 줄이 오래 마음에 남았다.'}},
+ {t:'발명 경진대회',chk:'d',dc:18,ok:{fx:{d:5,i:1,j:3},r:'자동으로 물을 주는 화분이 특허 출원 지원을 받았다.'},ng:{fx:{d:2,w:2},r:'시연 중에 물이 샜다. 원인은 이음새 하나였다.'}}]},
+{s:2,t:'첫 아르바이트',x:'고등학교 1학년 겨울방학. 동네 편의점에서 아르바이트생을 구한다.',c:[
+ {t:'편의점에서 일한다',fx:{w:2,c:2},r:'진상 손님도, 단골 할머니도 생겼다. 첫 월급 42만 원.'},
+ {t:'영상 편집 알바를 구한다',fx:{d:2,a:2},r:'컷 편집 하나에 밤을 새웠다. 자막 타이밍 감각이 생겼다.'},
+ {t:'아르바이트 대신 공부한다',fx:{i:2,w:1},r:'방학 동안 한 학기 진도를 미리 끝냈다.'}]},
+{s:2,need:s=>!!(s.pet&&s.pet.alive),t:'아픈 {P}',x:'{P}이(가) 이틀째 밥을 먹지 않는다. 동물병원에서 수술이 필요하다고 했다. 수술비가 만만치 않다.',c:[
+ {t:'방학 내내 아르바이트로 수술비를 보탠다',fx:{w:2,c:1,b:1},r:'수술은 잘 끝났다. 붕대를 감은 {P}이(가) 내 손등에 얼굴을 비볐다.'},
+ {t:'병의 원인을 직접 공부한다',fx:{i:3,b:1},r:'질문을 하도 해서 수의사 선생님이 "수의대 와도 되겠다"며 웃으셨다.'},
+ {t:'밤새 곁을 지킨다',fx:{a:2,w:1,b:1},r:'회복실 앞에서 밤을 새웠다. 새벽에 {P}이(가) 눈을 뜨고 나를 찾았다.'}]},
+{s:2,t:'수학여행',x:'제주도 수학여행 둘째 날 밤. 숙소 강당에서 장기자랑이 열린다.',c:[
+ {t:'무대에 올라 분위기를 띄운다',fx:{c:3,j:3},r:'다음 날부터 전교생이 이름을 알았다.'},
+ {t:'방에서 밤새 수다를 떤다',fx:{c:2,j:3},r:'선생님 순찰을 세 번 피했다. 비밀 이야기가 오갔다.'},
+ {t:'바다 사진을 찍으러 나간다',fx:{a:3,w:1},r:'새벽 해안의 사진이 휴대폰 배경화면이 됐다.'}]},
+{s:2,t:'단체방',x:'어느 날부터 반 단체방에서 내 말에만 아무도 답하지 않는다.',c:[
+ {t:'주동자를 찾아가 직접 묻는다',fx:{w:3,c:1,j:-2},r:'오해가 있었다. 사과는 못 받았지만 단체방은 다시 돌아갔다.'},
+ {t:'혼자 그림과 글에 몰두한다',fx:{a:3,j:-2},r:'가장 외로웠던 시기에 가장 많은 작품이 나왔다.'},
+ {t:'운동하며 버틴다',fx:{p:2,w:2},r:'땀을 흘리는 동안엔 휴대폰을 보지 않아도 됐다.'},
+ {t:'상담 선생님을 찾아간다',fx:{w:1,c:1,j:2},r:'"네 잘못이 아니야." 그 말이 생각보다 큰 힘이 됐다.'},
+ {t:'학교에 나가지 않고 방에 틀어박힌다',fx:{j:-1,i:-1,iso:2,idle:1},r:'창문을 가린 방에서 낮과 밤이 뒤섞였다. 아무도 찾아오지 않았다.'}]},
+{s:2,fix:1,t:'수능 D-100',x:'교실 칠판 옆에 D-100이 붙었다. 공기가 달라졌다.',c:[
+ {t:'독서실에서 하루 14시간',fx:{i:4,w:2,j:-4,gr:6},r:'모의고사 점수가 처음으로 1등급을 찍었다.'},
+ {t:'실기와 포트폴리오에 집중한다',fx:{a:2,d:2,w:1,gr:1},r:'손에 굳은살이 박이고, 작품 파일이 두꺼워졌다.'},
+ {t:'평소 리듬을 지킨다',fx:{i:2,p:1,j:2,gr:3},r:'매일 밤 30분 산책을 지켰다. 마음이 덜 흔들렸다.'},
+ {t:'다 포기하고 놀러 다닌다',fx:{j:4,i:-2,w:-1,idle:1,gr:-4},r:'친구들이 독서실에 갈 때 노래방에 갔다. 그때는 그게 자유라고 생각했다.'}]},
+{s:2,t:'게임에 빠지다',x:'요즘 밤마다 하는 게임에서 서버 랭킹 상위권에 올랐다.',c:[
+ {t:'프로게이머를 꿈꾼다',fx:{d:3,w:1,j:2},r:'반응 속도는 최고였지만, 손목이 먼저 아파 왔다.'},
+ {t:'직접 게임을 만들어 본다',fx:{i:2,d:2},r:'캐릭터 하나가 화면 위를 걷기까지 사흘이 걸렸다.'},
+ {t:'계정을 지우고 운동을 시작한다',fx:{p:2,w:3},r:'처음 일주일은 손이 근질거렸다. 한 달 뒤엔 턱걸이를 열 개 했다.'},
+ {t:'학교도 빠지고 밤낮없이 게임만 한다',fx:{d:1,j:3,i:-2,w:-2,idle:2},r:'새벽 다섯 시에 자고 오후 세 시에 일어난다. 출석부에 결석 표시가 쌓여 간다.'}]},
+{s:2,need:s=>!!(s.pet&&s.pet.alive),t:'{P}의 대형 사고',x:'학원에서 돌아오니 {P}이(가) 시험 대비 노트를 갈기갈기 찢어 놓았다. 시험은 내일이다.',c:[
+ {t:'웃음이 터져 사진부터 찍는다',fx:{j:3,c:1},r:'SNS에 올린 사진이 학교에서 화제가 됐다. 노트는 친구들이 빌려줬다.'},
+ {t:'기억을 더듬어 노트를 다시 쓴다',fx:{i:2,w:2},r:'다시 쓰다 보니 오히려 머리에 다 들어왔다. 시험은 잘 봤다.'},
+ {t:'{P}가 못 건드리게 선반을 짠다',fx:{d:3,b:1},r:'{P} 전용 장난감 칸까지 달린 선반이 완성됐다.'}]},
+{s:2,t:'학교 축제',x:'가을 축제에 반 부스를 하나 열어야 한다. 무엇을 맡을까?',c:[
+ {t:'떡볶이 부스 주방',fx:{d:2,c:2},r:'고추장 배합을 세 번 바꾼 끝에 완판했다.'},
+ {t:'교실 방탈출 기획',fx:{i:2,a:2},r:'아무도 첫 번째 자물쇠를 못 풀었다. 대성공.'},
+ {t:'홍보 담당',fx:{c:4},r:'복도를 누비며 외친 덕에 줄이 계단까지 이어졌다.'}]},
+{s:2,t:'할아버지의 입원',x:'평생 목수로 일한 할아버지가 쓰러져 병원에 입원하셨다.',c:[
+ {t:'병실에서 곁을 지킨다',fx:{a:2,w:2,c:1},r:'할아버지가 젊은 시절 이야기를 처음으로 들려주셨다.'},
+ {t:'병에 대해 직접 찾아본다',fx:{i:3},r:'의학 용어를 하나씩 찾아보다 생물 교과서가 다르게 보였다.'},
+ {t:'할아버지의 공방을 정리한다',fx:{d:3,w:1},r:'손때 묻은 대패를 하나 챙겼다. 할아버지가 웃으셨다.'}]},
+{s:2,t:'영어 말하기 대회',x:'교내 영어 말하기 대회 공고가 붙었다. 주제는 "나를 바꾼 하루".',c:[
+ {t:'무대에 선다',chk:'c',dc:14,ok:{fx:{c:4,i:1,j:2},r:'청중이 웃어야 할 곳에서 웃었다. 최우수상!'},ng:{fx:{c:1,w:2},r:'첫 문장에서 머리가 하얘졌다. 끝까지 해낸 건 나뿐이었다.'}},
+ {t:'친구 원고를 다듬어 준다',fx:{i:2,a:1},r:'친구가 상을 받고 나를 무대 위로 불러냈다.'},
+ {t:'대신 원어민 영화를 본다',fx:{a:2,j:2},r:'자막 없이 웃을 수 있게 되기까지 영화 여섯 편이 걸렸다.'}]},
+
+/* ── 3 청년기 ── */
+{s:3,fix:1,t:'스무 살의 갈림길',x:'졸업식이 끝났다. 친구들은 저마다 다른 문 앞에 서 있다. 나는 어느 문을 열까?',c:[
+ {t:'대학에 진학한다',fx:{i:1},on:s=>{s.path='exam'},r:'배치표와 원서 접수 일정표를 책상 앞에 붙였다.'},
+ {t:'대학 대신 바로 취업한다',fx:{d:2,w:2,c:1},on:s=>{s.path='job'},r:'선배 기술자 옆에서 공구 이름부터 외웠다. 첫 출근 날 작업복이 조금 컸다.'},
+ {t:'모아 둔 돈으로 창업한다',fx:{w:3,c:1},on:s=>{s.path='startup'},r:'스무 살 사장님. 명함 100장을 찍었는데, 줄 사람이 열 명뿐이었다.'},
+ {t:'1년 동안 여행을 떠난다',fx:{a:2,p:2,j:3},on:s=>{s.path='gap'},r:'열두 나라를 돌았다. 배낭 무게만큼 이야기가 쌓였다.'},
+ {t:'아무것도 하지 않고 집에서 쉰다',fx:{j:3,w:-2,p:-1,idle:2},on:s=>{s.path='idle'},r:'"딱 1년만 쉬자." 1년은 생각보다 빨리, 그리고 조용히 지나갔다.'}]},
+{s:3,fix:1,lazy:1,need:s=>s.path==='exam',t:'원서 접수',x:'수능 성적표가 나왔다. {GR} 담임 선생님이 배치표를 펼치며 물었다. "어디에 원서 넣을래?"',c:[
+ {t:'최상위 명문대에 소신 지원한다',chk:'i',dc:s=>34-(s.gr||0),ok:{fx:{i:3,c:2,j:6},on:s=>{s.univ='top';s.path='uni'},r:'합격 문자를 세 번 다시 읽었다. 청운대학교. 동네 입구에 축하 현수막이 걸렸다.'},ng:{fx:{w:2,j:-4},on:s=>{s.univ='mid';s.path='uni'},r:'불합격. 추가 합격 전화도 오지 않았다. 결국 점수에 맞춘 도담대학교에 입학했다.'}},
+ {t:'점수에 맞춰 무난한 대학에 간다',fx:{i:2,c:1},on:s=>{s.univ='mid';s.path='uni'},r:'도담대학교. 기대도 실망도 크지 않은, 적당한 시작이다.'},
+ {t:'전공이 강한 지방 국립대를 고른다',fx:{d:2,a:1,w:1},on:s=>{s.univ='local';s.path='uni'},r:'바다가 보이는 해솔국립대학교. 실습실 장비만큼은 어느 명문대에도 밀리지 않았다.'},
+ {t:'예술대학 실기 전형에 도전한다',need:s=>s.stats.a>=14&&s.stats.a>=s.stats.p,chk:'a',dc:24,ok:{fx:{a:4,j:5},on:s=>{s.univ='arts';s.path='uni'},r:'실기 시험장에서 손이 떨리지 않았다. 누리예술대학교 합격.'},ng:{fx:{a:1,j:-3},on:s=>{s.univ='low';s.path='uni'},r:'실기에서 떨어졌다. 마감 직전 아무 곳에나 넣은 원서 하나가 붙었다.'}},
+ {t:'체육대학 실기 전형에 도전한다',need:s=>s.stats.p>=14&&s.stats.p>s.stats.a,chk:'p',dc:24,ok:{fx:{p:4,j:5},on:s=>{s.univ='sports';s.path='uni'},r:'왕복달리기 마지막 바퀴에서 기록을 넘겼다. 한결체육대학교 합격.'},ng:{fx:{p:1,j:-3},on:s=>{s.univ='low';s.path='uni'},r:'실기에서 떨어졌다. 마감 직전 아무 곳에나 넣은 원서 하나가 붙었다.'}},
+ {t:'아무 데나 붙는 곳에 원서를 넣는다',fx:{j:2,w:-1},on:s=>{s.univ='low';s.path='uni'},r:'처음 들어 보는 미래산업대학교. 입학식 날 지도 앱으로 학교를 찾았다.'},
+ {t:'재수를 결심한다',fx:{i:2,w:2,j:-4,gr:2},on:s=>{s.path='retake'},r:'친구들이 새내기가 될 때, 나는 재수 학원 맨 앞자리에 앉았다.'}]},
+{s:3,fix:1,lazy:1,need:s=>s.path==='retake',t:'두 번째 수능',x:'1년 동안 같은 문제집을 세 번 풀었다. 다시 받아 든 성적표. {GR}',c:[
+ {t:'이번엔 명문대에 도전한다',chk:'i',dc:s=>31-(s.gr||0),ok:{fx:{i:3,w:2,j:7},on:s=>{s.univ='top';s.path='uni'},r:'합격. 1년이 아깝지 않았다. 청운대학교 신입생 명단에 이름이 올랐다.'},ng:{fx:{w:2,j:-5},on:s=>{s.univ='mid';s.path='uni'},r:'또 한 끗 차이. 이번엔 미련 없이 도담대학교에 입학했다.'}},
+ {t:'점수에 맞춰 무난한 대학에 간다',fx:{i:1,j:2},on:s=>{s.univ='mid';s.path='uni'},r:'도담대학교. 1년 늦었지만 동기들보다 마음은 단단했다.'},
+ {t:'공부는 여기까지, 일을 시작한다',fx:{w:2,d:1},on:s=>{s.path='job'},r:'책을 덮고 작업복을 입었다. 이상하게 마음이 가벼웠다.'}]},
+{s:3,t:'청춘의 모임',x:'새로운 모임에 들어갈 시간이다.',c:[
+ {t:'산악회',fx:{p:3,w:2},r:'첫 지리산 종주. 천왕봉 일출 앞에서 말을 잃었다.'},
+ {t:'창업 동아리',fx:{c:2,i:2},r:'첫 사업 계획서는 처참했지만, 발표는 잘했다는 평을 들었다.'},
+ {t:'독립영화 동아리',fx:{a:3,c:1},r:'5분짜리 단편의 엔딩 크레딧에 내 이름이 올라갔다.'}]},
+{s:3,t:'1년간의 해외 봉사',x:'해외 봉사단에 합격했다. 현장에서 맡을 일을 고른다.',c:[
+ {t:'흙벽돌 학교를 짓는다',fx:{d:3,p:2},r:'손바닥이 다 까졌다. 완공식 날 아이들이 노래를 불러 줬다.'},
+ {t:'아이들에게 수학을 가르친다',fx:{c:2,i:2},r:'구구단을 다 외운 아이가 나를 꼭 안아 줬다.'},
+ {t:'마을의 하루를 사진으로 기록한다',fx:{a:3,w:1},r:'사진전이 열렸고, 수익금은 마을 우물에 쓰였다.'}]},
+{s:3,t:'첫 월급',x:'통장에 처음으로 월급이 찍혔다.',c:[
+ {t:'부모님께 선물을 드린다',fx:{c:2,j:3},r:'엄마가 내복을 받고 한참 웃으셨다.'},
+ {t:'작업 장비에 투자한다',fx:{d:3,w:1},r:'좋은 도구는 실력보다 먼저 자신감을 준다.'},
+ {t:'적금을 든다',fx:{w:3},r:'2년 만기. 달력에 동그라미를 쳤다.'},
+ {t:'온라인 강의를 결제한다',fx:{i:3},r:'퇴근 후 한 시간, 새로운 공부가 시작됐다.'},
+ {t:'월급을 전부 코인에 넣는다',chk:'i',dc:30,ok:{fx:{j:5,i:1},r:'운 좋게 두 배가 됐다. 그날 밤 잠을 이루지 못했다. 다음엔 더 크게 걸고 싶어졌다.'},ng:{fx:{j:-6,debt:2},r:'일주일 만에 반토막. 손실을 메우려고 카드론에 손을 댔다.'}}]},
+{s:3,t:'낙방',x:'1년을 준비한 시험(혹은 공모, 혹은 면접)에서 떨어졌다. 문자 한 통이 전부였다.',c:[
+ {t:'이를 악물고 다시 도전한다',fx:{w:4,j:-2},r:'떨어진 이유를 표로 정리했다. 그 표가 다음 해의 지도가 됐다.'},
+ {t:'방향을 틀어 새 분야를 공부한다',fx:{i:2,a:1},r:'돌아간 길에서 뜻밖의 적성을 발견했다.'},
+ {t:'훌쩍 여행을 떠난다',fx:{j:4,a:1},r:'바다를 보며 일주일을 보냈다. 돌아와서야 울 수 있었다.'},
+ {t:'모든 연락을 끊고 방에 틀어박힌다',fx:{j:-3,w:-1,iso:2,idle:1},r:'휴대폰 알림을 모두 껐다. 친구들의 메시지에는 "1"이 사라지지 않았다.'}]},
+{s:3,t:'선배의 제안',x:'존경하던 선배가 "같이 일해 볼래?" 하고 연락해 왔다.',c:[
+ {t:'선배와 함께한다',fx:{c:2,d:2},r:'어깨너머로 배운 것이 책 열 권보다 많았다.'},
+ {t:'정중히 거절하고 내 길을 간다',fx:{w:3},r:'선배는 "그럴 줄 알았다"며 웃었다.'},
+ {t:'조건을 꼼꼼히 따져 본다',fx:{i:2,w:1},r:'계약서 3페이지의 함정을 찾아냈다. 선배도 몰랐다고 한다.'}]},
+{s:3,fix:1,t:'인연',x:'스물넷의 봄. 요즘 자꾸 떠오르는 얼굴이 있다.',c:[
+ {t:'동아리에서 만난 서윤에게 먼저 연락한다',fx:{c:2,j:4},on:s=>{s.partner={name:'서윤',st:'dating',love:1}},r:'"주말에 전시 보러 갈래?" 답장은 3초 만에 왔다.'},
+ {t:'소개팅에서 만난 도현을 다시 만난다',fx:{i:1,j:4},on:s=>{s.partner={name:'도현',st:'dating',love:1}},r:'두 번째 만남에서 좋아하는 책이 같다는 걸 알았다. 대화가 새벽까지 이어졌다.'},
+ {t:'오랜 친구 지우의 고백을 받아들인다',fx:{a:2,j:4},on:s=>{s.partner={name:'지우',st:'dating',love:1}},r:'"사실 중학교 때부터였어." 웃음이 터졌다. 나도 그랬다.'},
+ {t:'카페에서 마주친 사람에게 말을 건다',chk:'c',dc:20,ok:{fx:{c:3,j:6},on:s=>{s.partner={name:'하린',st:'dating',love:1}},r:'하린이라는 이름을 알게 됐다. 일주일 뒤, 같은 자리에서 다시 만났다.'},ng:{fx:{a:2,j:-2},r:'어색한 미소만 남았다. 그날 밤 일기장이 길어졌다.'}},
+ {t:'지금은 혼자가 편하다',fx:{w:2,i:1},on:s=>{s.solo=true},r:'혼자 떠난 여행에서 나에 대해 많이 알게 됐다.'}]},
+{s:3,fix:1,lazy:1,need:s=>!!(s.partner&&s.partner.st==='dating'),t:'멀어진 거리',x:'{L}이(가) 1년간 다른 도시로 발령이 났다. 기차로 세 시간 거리다.',c:[
+ {t:'장거리 연애를 이어 간다',fx:{a:2,w:2,j:1,l:1},r:'주말마다 KTX를 탔다. 편지도 다시 쓰기 시작했다.'},
+ {t:'중간 도시에서 같이 운동하는 주말을 만든다',fx:{p:2,j:3,l:1},r:'둘이 함께 10km 대회에 나갔다. 결승선에서 {L}이(가) 기다리고 있었다.'},
+ {t:'일에 집중하기로 한다',fx:{i:2,w:1,j:-3,l:-1},r:'성과는 올랐지만 전화 통화가 점점 짧아졌다.'}]},
+{s:3,t:'번아웃',x:'아침에 눈을 떠도 몸이 일어나지 않는다. 아무것도 하고 싶지 않다.',c:[
+ {t:'한 달 동안 쉰다',fx:{j:6},r:'아무 계획 없이 걷고 먹고 잤다. 조금씩 색이 돌아왔다.'},
+ {t:'버틴다',fx:{w:3,j:-5},r:'버티는 법을 배웠다. 대신 웃는 법을 조금 잊었다.'},
+ {t:'퇴근 후 새로운 취미를 시작한다',fx:{a:2,d:2,j:3},r:'흙을 만지는 도예 수업. 물레 위에서 머리가 비워졌다.'},
+ {t:'매일 밤 술로 버틴다',fx:{j:2,p:-3,w:-1,iso:1},r:'잠은 쉽게 들었다. 아침은 점점 무거워졌다.'}]},
+{s:3,t:'달콤한 제안',x:'오랜만에 연락 온 동창이 커피를 샀다. "원금 보장에 월 10%. 나만 믿어." 휴대폰에 수익 인증 사진이 가득하다.',c:[
+ {t:'모아 둔 돈을 전부 맡긴다',chk:'i',dc:40,ok:{fx:{j:4,i:1},r:'석 달 동안 이자가 들어왔다. 넉 달째, 동창의 번호가 사라졌다. 다행히 원금은 이미 빼 둔 뒤였다.'},ng:{fx:{j:-8,debt:3},r:'석 달 동안 이자가 들어왔다. 넉 달째, 동창의 번호가 사라졌다. 돈도 함께 사라졌다.'}},
+ {t:'꼼꼼히 따져 보고 거절한다',fx:{i:2,w:2},r:'반년 뒤 뉴스에 그 회사 이름이 나왔다. 사기 피해자 3천 명.'},
+ {t:'친구들에게도 소개해 준다',fx:{c:1,debt:2,iso:2},r:'돈을 잃은 친구들은 더 이상 내 전화를 받지 않는다.'}]},
+{s:3,t:'풀코스 마라톤',x:'친구가 마라톤 풀코스 신청서를 내밀었다. 42.195km.',c:[
+ {t:'완주에 도전한다',chk:'p',dc:22,ok:{fx:{p:5,w:2,j:4},r:'4시간 12분. 결승선에서 모르는 사람과 끌어안았다.'},ng:{fx:{p:2,w:3},r:'32km에서 다리가 멈췄다. 내년 신청서를 그 자리에서 냈다.'}},
+ {t:'급수대 자원봉사를 한다',fx:{c:2,j:2},r:'물컵을 건넬 때마다 "감사합니다"가 돌아왔다.'},
+ {t:'응원 현수막을 만든다',fx:{a:2,d:1},r:'"다리야 조금만 더" 현수막이 대회 사진에 찍혔다.'}]},
+{s:3,t:'마감 전날',x:'중요한 프로젝트 마감이 내일 아침이다. 팀원 한 명이 아프다.',c:[
+ {t:'핵심 기능을 밤새 만든다',fx:{i:3,d:1,j:-1},r:'새벽 다섯 시, 마지막 버그를 잡았다.'},
+ {t:'디자인을 처음부터 다시 다듬는다',fx:{a:3,d:1},r:'아침 회의에서 "이게 같은 프로젝트냐"는 말을 들었다.'},
+ {t:'발표를 맡아 부족한 부분을 메운다',fx:{c:3,w:1},r:'질문 공세를 웃으며 받아넘겼다. 계약 성사.'}]},
+{s:3,fix:1,lazy:1,need:s=>s.path==='uni'&&!!s.univ,t:'졸업반',x:'마지막 학기. 학과 게시판에 채용 공고와 대학원 모집 공고가 나란히 붙었다.',c:[
+ {t:'대기업 공채에 지원한다',chk:'c',dc:s=>({top:14,mid:20,local:22,arts:24,sports:24,low:28})[s.univ]||22,ok:{fx:{c:3,i:1,j:5},on:s=>{s.career='corp'},r:'최종 면접까지 통과했다. 사원증 사진을 몇 번이나 다시 찍었다.'},ng:{fx:{w:2,j:-4},r:'서류 전형 탈락. 이력서의 학교 이름 칸이 유난히 크게 보였다.'}},
+ {t:'대학원에 진학한다',fx:{i:4,w:1,j:-1},on:s=>{s.career='grad'},r:'연구실 열쇠를 받았다. 새벽 두 시의 실험실이 생각보다 좋았다.'},
+ {t:'공무원 시험을 준비한다',chk:'w',dc:22,ok:{fx:{w:3,i:1,j:4},on:s=>{s.career='civil'},r:'합격자 명단 맨 아래쪽에 내 이름이 있었다. 부모님이 우셨다.'},ng:{fx:{w:2,i:1,j:-4},r:'2점 차 불합격. 노량진 고시원의 창문 없는 방에서 한 해를 더 보내기로 했다.'}},
+ {t:'전공을 살려 작은 회사에 들어간다',fx:{d:2,c:1,j:2},on:s=>{s.career='small'},r:'직원 열두 명. 첫 주부터 중요한 일을 맡았다.'}]},
+{s:3,fix:1,lazy:1,need:s=>s.path==='job',t:'현장 3년 차',x:'일을 시작한 지 3년. 손은 빨라졌고, 대학에 간 친구들은 이제 졸업반이다.',c:[
+ {t:'기능장 자격증에 도전한다',chk:'d',dc:22,ok:{fx:{d:5,w:2,j:4},r:'합격증을 액자에 넣었다. 현장에서 나를 부르는 호칭이 바뀌었다.'},ng:{fx:{d:2,w:2,j:-2},r:'실기에서 한 끗이 모자랐다. 내년 시험 날짜를 달력에 적었다.'}},
+ {t:'야간대학을 다니며 학위도 딴다',fx:{i:3,w:2,j:-2},r:'퇴근 후 강의실에서 졸지 않으려고 커피를 두 잔씩 마셨다. 4년 뒤 학사모를 썼다.'},
+ {t:'모은 돈으로 내 가게를 차린다',fx:{w:2,c:1},on:s=>{s.path='startup'},r:'작은 간판을 달았다. 이름은 3일 밤을 고민해서 지었다.'},
+ {t:'팀장 승진 면접을 본다',fx:{c:3,w:1},r:'"현장을 제일 잘 아는 사람"이라는 추천서가 붙었다.'}]},
+{s:3,fix:1,lazy:1,need:s=>s.path==='startup'&&!s.biz,t:'버티는 회사',x:'사무실 월세가 두 달 밀렸다. 오늘 오후, 마지막일지 모르는 투자자 미팅이 있다.',c:[
+ {t:'투자 설명회에서 승부를 건다',chk:'c',dc:24,ok:{fx:{c:4,w:2,j:6},on:s=>{s.biz='ok'},r:'투자 유치 성공. 다음 달, 직원이 다섯 명으로 늘었다.'},ng:{fx:{w:2,j:-5,debt:2},on:s=>{s.biz='fail'},r:'투자는 무산됐다. 결국 폐업 신고서에 도장을 찍었다.'}},
+ {t:'제품을 밤새 다듬어 실력으로 승부한다',chk:'d',dc:24,ok:{fx:{d:4,i:2,j:5},on:s=>{s.biz='ok'},r:'써 본 손님들이 알아서 소문을 냈다. 주문이 밀려 공장을 늘렸다.'},ng:{fx:{d:2,j:-5,debt:2},on:s=>{s.biz='fail'},r:'좋은 제품이었지만 시간이 모자랐다. 창고에 재고만 남았다.'}},
+ {t:'정리하고 회사에 취직한다',fx:{w:1,c:1,j:-2},on:s=>{s.biz='closed';s.path='job'},r:'간판을 내리던 날, 처음 찍은 명함 한 장을 지갑에 넣었다.'}]},
+{s:3,t:'인생의 시험대',x:'꿈에 한 발 다가갈 수 있는 선발 기회가 찾아왔다. 경쟁률은 50 대 1.',c:[
+ {t:'국가 연구 장학생 선발',chk:'i',dc:26,ok:{fx:{i:6,w:2,j:4},r:'면접관이 내 논문의 각주까지 읽고 왔다. 합격.'},ng:{fx:{i:2,w:2,j:-2},r:'최종 면접에서 떨어졌다. 심사평은 "1년 뒤를 기대함".'}},
+ {t:'실업팀 입단 테스트',chk:'p',dc:26,ok:{fx:{p:6,w:2,j:4},r:'테스트 마지막 날 감독이 이름을 불렀다.'},ng:{fx:{p:2,w:2,j:-2},r:'체력 테스트 2위. 한 자리뿐이었다.'}},
+ {t:'국제 기능올림픽 대표 선발',chk:'d',dc:26,ok:{fx:{d:6,w:2,j:4},r:'0.01mm 오차로 1위. 태극기가 박힌 작업복을 받았다.'},ng:{fx:{d:2,w:2,j:-2},r:'마감 3분 전 공구가 미끄러졌다.'}},
+ {t:'신인 작가 공모',chk:'a',dc:26,ok:{fx:{a:6,c:1,j:4},r:'당선 전화를 받고 한참 아무 말도 못 했다.'},ng:{fx:{a:2,w:2,j:-2},r:'본심까지 올랐다. 그것만으로도 이름이 알려졌다.'}}]},
+{s:3,fix:1,need:s=>!!(s.pet&&s.pet.alive&&s.pet.gen===1),t:'{P}와의 이별',x:'{P}이(가) 열다섯 살이 되었다. 요즘은 하루 대부분을 잠으로 보낸다. 수의사 선생님이 조용히 말했다. "이제 마음의 준비를 하셔야 해요."',c:[
+ {t:'{P}가 좋아하던 공원에 마지막으로 간다',fx:{a:2,j:-3,b:1},on:s=>{s.pet.alive=false},r:'햇볕 좋은 벤치에서 {P}이(가) 내 무릎에 머리를 얹고 오래 잠들었다. 그리고 다시 깨지 않았다.'},
+ {t:'{P}의 모습을 그림과 글로 남긴다',fx:{a:3,j:-3,b:1},on:s=>{s.pet.alive=false},r:'그림을 완성한 다음 날 아침, {P}은(는) 편안한 얼굴로 떠났다. 그림은 지금도 책상 위에 있다.'},
+ {t:'마지막 순간까지 곁에서 쓰다듬는다',fx:{w:2,c:1,j:-3,b:1},on:s=>{s.pet.alive=false},r:'"고마웠어." 그 말을 들었는지, {P}이(가) 꼬리를 한 번 움직였다.'}]},
+{s:3,t:'첫 독립',x:'처음으로 혼자 살 집을 구했다. 원룸 열 평, 텅 빈 방.',c:[
+ {t:'가구를 직접 만든다',fx:{d:3,a:1},r:'원목 선반 하나에 주말 두 번을 썼다. 볼 때마다 뿌듯하다.'},
+ {t:'친구들을 불러 집들이를 한다',fx:{c:3,j:2},r:'열 평 방에 열네 명이 앉았다. 이웃에게 사과 편지를 썼다.'},
+ {t:'벽 한쪽을 책장으로 채운다',fx:{i:2,a:1},r:'고향 집에서 가져온 책이 제자리를 찾았다.'},
+ {t:'근처 공원에서 매일 아침 달린다',fx:{p:3,j:1},r:'동네 지리를 발로 익혔다.'},
+ {t:'배달 음식과 침대에서만 지낸다',fx:{j:2,p:-2,idle:1},r:'택배 상자가 현관을 막을 만큼 쌓였다. 방은 넓어졌는데 세상은 좁아졌다.'}]},
+{s:3,t:'동네의 문제',x:'집 앞 골목 가로등이 몇 달째 꺼져 있다. 밤길이 무섭다는 이웃이 많다.',c:[
+ {t:'자료를 모아 구청에 민원을 넣는다',fx:{i:2,w:1},r:'사진과 지도를 첨부한 민원서. 2주 만에 불이 켜졌다.'},
+ {t:'주민 모임을 꾸린다',fx:{c:3,w:1},r:'모임은 가로등 이후에도 이어져 골목 축제가 됐다.'},
+ {t:'골목 벽에 야광 벽화를 그린다',fx:{a:3,d:1},r:'어두운 골목이 동네 명소가 됐다.'}]},
+
+/* ── 4 어른의 시간 ── */
+{s:4,fix:1,need:s=>!!(s.partner&&s.partner.st==='dating'),t:'반지 상자',x:'{L}과(와) 함께한 지 몇 년. 주머니 속 반지 상자가 묵직하다.',c:[
+ {t:'프러포즈한다',chk:'c',dc:s=>24-(s.partner?s.partner.love:0)*4,ok:{fx:{c:2,j:8},on:s=>{s.partner.st='married'},r:'"응." {L}이(가) 울면서 웃었다. 그해 봄, 작은 마당에서 결혼식을 올렸다.'},ng:{fx:{w:3,j:-6},on:s=>{s.partner.st='parted';s.solo=true},r:'"미안해, 나는 아직…." 그해 겨울, 우리는 각자의 길을 가기로 했다.'}},
+ {t:'결혼식 대신 함께 살자고 한다',fx:{j:5,w:1},on:s=>{s.partner.st='together'},r:'서류 대신 현관 열쇠 두 개. 우리 방식대로 가족이 됐다.'},
+ {t:'고마웠다며 각자의 길을 간다',fx:{w:2,j:-3},on:s=>{s.partner.st='parted';s.solo=true},r:'긴 연애를 좋은 기억으로 마무리했다.'}]},
+{s:4,t:'갈림길의 서른',x:'회사에서 팀장을 제안받았다. 동시에 독립해 보라는 권유도 있다.',c:[
+ {t:'독립해서 내 일을 시작한다',fx:{w:3,c:2},r:'사업자 등록증을 받던 날, 손이 조금 떨렸다.'},
+ {t:'팀장 대신 전문가의 길을 고른다',fx:{i:2,d:2},r:'회의는 줄고 실력은 늘었다.'},
+ {t:'가족과의 시간을 지키기로 한다',fx:{j:6},r:'저녁 일곱 시 퇴근. 식탁에 둘러앉는 날이 늘었다.'},
+ {t:'대출을 끌어모아 크게 창업한다',chk:'c',dc:34,ok:{fx:{c:4,w:3,j:5},r:'첫해 매출이 목표의 세 배. 직원이 열 명으로 늘었다.'},ng:{fx:{j:-8,w:1,debt:3},r:'반년 만에 문을 닫았다. 남은 건 이름이 적힌 대출 서류 다섯 장.'}}]},
+{s:4,t:'후배 가르치기',x:'새로 들어온 후배가 실수를 반복한다. 가르치는 일이 맡겨졌다.',c:[
+ {t:'엄격하게 원칙부터',fx:{w:2,i:1},r:'후배는 3개월 만에 혼자서 일을 해냈다.'},
+ {t:'친근하게 밥부터 산다',fx:{c:3,j:1},r:'후배가 고민을 털어놓았다. 실수의 이유는 다른 데 있었다.'},
+ {t:'말보다 직접 시범을 보인다',fx:{d:3},r:'"아, 이렇게 하는 거구나." 설명 열 번보다 나았다.'}]},
+{s:4,fix:1,lazy:1,need:s=>!s.partner||s.partner.st==='parted',t:'늦게 찾아온 인연',x:'서른다섯. 친구 결혼식 뒤풀이에서 옆자리에 앉은 은재와 이야기가 끝나지 않는다.',c:[
+ {t:'다시 만나자고 용기를 낸다',chk:'c',dc:18,ok:{fx:{c:2,j:7},on:s=>{s.partner={name:'은재',st:'married',love:2};s.solo=false},r:'1년 뒤, 은재와 결혼했다. 하객은 스무 명뿐이었지만 모두 울었다.'},ng:{fx:{a:2,j:-2},r:'연락처는 주고받았지만 그걸로 끝이었다. 그래도 좋은 저녁이었다.'}},
+ {t:'혼자의 삶이 좋다',fx:{w:2,j:3},on:s=>{s.solo=true},r:'좋아하는 것들로 채운 집. 혼자인 저녁이 외롭지 않다.'}]},
+{s:4,fix:1,lazy:1,need:s=>!!(s.partner&&(s.partner.st==='married'||s.partner.st==='together')),t:'식탁 위의 질문',x:'저녁을 먹다가 {L}이(가) 조심스럽게 물었다. "우리, 아이를 가져 볼까?"',c:[
+ {t:'좋아, 가족을 늘리자',fx:{w:2,j:6},on:s=>{s.kids=1},r:'이듬해 봄, 3.1kg의 아기가 태어났다. 문틀에 새 연필 자국이 생길 차례다.'},
+ {t:'우리 둘이면 충분해',fx:{c:1,j:4},r:'주말마다 둘이 여행 지도를 펼친다. 아직 가 볼 곳이 많다.'},
+ {t:'아이 대신 강아지를 데려오자',need:s=>!(s.pet&&s.pet.alive),fx:{j:5,p:1},on:s=>{s.pet={type:'dog',name:'',gen:2,alive:true}},r:'보호소에서 데려온 {P}이(가) 둘 사이에서 잠든다. 셋이 된 집이 꽉 찬 느낌이다.'}]},
+{s:4,t:'건강검진',x:'건강검진 결과지에 빨간 글씨가 세 줄 찍혀 있다.',c:[
+ {t:'운동을 다시 시작한다',fx:{p:4,j:1},r:'6개월 뒤 결과지의 빨간 글씨가 모두 사라졌다.'},
+ {t:'신경 쓰지 않고 일에 몰두한다',fx:{w:1,i:1,j:-4},r:'일은 잘 풀렸지만, 계단을 오를 때 숨이 찼다.'},
+ {t:'명상과 산책을 시작한다',fx:{w:2,a:1,j:3},r:'아침 20분의 고요가 하루를 바꿨다.'}]},
+{s:4,need:s=>!(s.pet&&s.pet.alive),t:'노견 입양 주간',x:'퇴근길 보호소 앞에 "나이 든 동물 입양 주간" 현수막이 걸렸다. 철창 너머 하얀 주둥이의 강아지와 눈이 마주쳤다.',c:[
+ {t:'하얀 주둥이의 나이 든 강아지를 데려온다',fx:{j:5,c:1},on:s=>{s.pet={type:'dog',name:'',gen:2,alive:true}},r:'느릿느릿 걷는 {P}에게 맞추다 보니 내 걸음도 느긋해졌다.'},
+ {t:'옆 칸의 고양이를 데려온다',fx:{j:5,a:1},on:s=>{s.pet={type:'cat',name:'',gen:2,alive:true}},r:'{P}은(는) 첫날부터 키보드 위에서 잤다. 일은 느려졌고, 행복은 늘었다.'},
+ {t:'매달 후원만 하기로 한다',fx:{w:1,c:1},r:'매달 사료 한 포대를 보낸다. 보호소 게시판에 내 이름이 붙었다.'}]},
+{s:4,need:s=>!!(s.pet&&s.pet.alive),t:'{P}와 함께하는 주말',x:'오랜만에 아무 약속 없는 토요일. {P}이(가) 기대에 찬 눈으로 나를 올려다본다.',c:[
+ {t:'{P}와 바닷가로 여행을 떠난다',fx:{p:2,j:4,b:1},r:'파도를 처음 본 {P}이(가) 한참을 멈춰 서 있었다.'},
+ {t:'{P} 사진으로 작은 전시를 연다',fx:{a:2,c:2,b:1},r:'동네 카페 벽에 사진 스무 장. 관람객 절반이 반려인이었다.'},
+ {t:'동네 유기동물 봉사 모임을 꾸린다',fx:{c:2,w:2,b:1},r:'첫 모임엔 세 명, 1년 뒤엔 마흔 명이 됐다.'}]},
+{s:4,need:s=>!!(s.partner&&s.partner.st!=='parted'),t:'사소한 다툼',x:'설거지 문제로 {L}과(와) 크게 다퉜다. 사실 설거지가 문제는 아니었다.',c:[
+ {t:'먼저 사과하고 속마음을 묻는다',fx:{c:2,w:1,j:2},r:'"요즘 많이 지쳤어." 둘 다 같은 말을 하고 있었다.'},
+ {t:'집안일 분담표를 만든다',fx:{d:1,i:2},r:'냉장고에 붙은 분담표가 평화 협정이 됐다.'},
+ {t:'편지를 써서 식탁에 둔다',fx:{a:2,j:2},r:'다음 날 아침, 편지 밑에 답장이 적혀 있었다.'}]},
+{s:4,fix:1,lazy:1,need:s=>!!s.solo&&!(s.partner&&(s.partner.st==='married'||s.partner.st==='together')),t:'함께 늙어 갈 친구들',x:'오랜 친구 셋이 술자리에서 반쯤 진심으로 말했다. "우리 나중에 한 집에 모여 살자." 그 "나중"이 생각보다 가까이 와 있다.',c:[
+ {t:'마당 있는 집을 구해 함께 산다',fx:{c:3,j:6},on:s=>{s.cohouse=true},r:'방은 넷, 부엌은 하나. 저녁 당번표와 공동 텃밭이 생겼다. 아무도 혼자 아프지 않는다.'},
+ {t:'같은 동네에 각자 집을 구한다',fx:{c:2,w:1,j:3},on:s=>{s.cohouse=true},r:'걸어서 5분 거리. 주말 저녁엔 돌아가며 밥을 차린다.'},
+ {t:'나는 혼자 사는 게 맞다',fx:{w:2,a:1,j:2},r:'초대는 언제든 받기로 했다. 열쇠 하나는 친구들에게 맡겨 두었다.'}]},
+{s:4,need:s=>!!s.solo&&!(s.partner&&(s.partner.st==='married'||s.partner.st==='together')),t:'내 이름의 집',x:'10년 동안 부은 적금이 만기가 됐다. 작은 집 하나를 살 수 있는 돈이다.',c:[
+ {t:'오래된 집을 사서 손수 고친다',fx:{d:4,j:3},r:'벽지를 뜯고 마루를 새로 깔았다. 집 곳곳에 내 손자국이 남았다.'},
+ {t:'햇빛 잘 드는 작업실 겸 집을 고른다',fx:{a:3,j:3},r:'창가에 책상을 두었다. 아침마다 빛이 책상 위를 천천히 건너간다.'},
+ {t:'집 대신 배우고 싶던 것에 투자한다',fx:{i:3,w:1},r:'대학원 등록금 영수증이 집 계약서보다 뿌듯했다.'}]},
+{s:4,need:s=>!!s.solo&&!(s.partner&&(s.partner.st==='married'||s.partner.st==='together')),t:'혼자 떠나는 한 달',x:'안식월 휴가를 받았다. 누구에게 허락받을 필요 없이, 가고 싶은 곳 어디든 갈 수 있다.',c:[
+ {t:'산티아고 순례길 800km를 걷는다',fx:{p:3,w:3,j:3},r:'발톱 두 개를 잃고, 평생 친구 세 명을 얻었다.'},
+ {t:'낯선 도시에서 요리 학교에 다닌다',fx:{d:3,c:1,j:3},r:'돌아오는 짐 가방 절반이 향신료였다.'},
+ {t:'바닷가 마을에서 글만 쓴다',fx:{a:3,i:1,j:3},r:'한 달 만에 원고 200매. 첫 문장은 "혼자는 외로움과 다르다"였다.'}]},
+{s:4,t:'오래된 꿈',x:'이삿짐을 정리하다 어릴 때 그린 그림과 일기장을 발견했다.',c:[
+ {t:'다시 붓을 든다',fx:{a:4,j:2},r:'손은 굳었지만, 색을 고르는 눈은 그대로였다.'},
+ {t:'지나온 일을 책으로 쓴다',fx:{i:2,a:2},r:'원고 300매. 출판사 세 곳에서 답장이 왔다.'},
+ {t:'어릴 적처럼 산에 오른다',fx:{p:3,j:3},r:'정상에서 일기장 한 구절을 소리 내어 읽었다.'}]},
+{s:4,t:'큰 위기',x:'내가 책임진 일에서 큰 문제가 터졌다. 내일 아침이면 모두가 알게 된다.',c:[
+ {t:'먼저 공개하고 책임을 진다',fx:{w:3,c:2},r:'비난도 있었지만, 신뢰는 오히려 단단해졌다.'},
+ {t:'밤새 원인을 찾아 고친다',fx:{i:3,d:2,j:-1},r:'새벽 네 시, 문제의 원인을 찾았다. 아침 회의 전에 해결.'},
+ {t:'동료들과 짐을 나눈다',fx:{c:3,j:1},r:'혼자였다면 일주일 걸렸을 일을 하룻밤에 끝냈다.'}]},
+{s:4,t:'인터뷰 요청',x:'한 매체에서 "당신의 길"이라는 주제로 인터뷰를 요청해 왔다.',c:[
+ {t:'카메라 앞에 선다',fx:{c:3,j:2},r:'영상 조회수가 생각보다 높았다. 모르는 사람에게서 응원 메일이 왔다.'},
+ {t:'거절하고 하던 일을 한다',fx:{d:2,w:2},r:'"결과물로 말하겠습니다." 그 답변이 오히려 기사 제목이 됐다.'},
+ {t:'글로 답하겠다고 한다',fx:{a:2,i:1},r:'긴 서면 답변이 그대로 칼럼이 됐다.'}]},
+{s:4,t:'나이 드신 부모님',x:'어머니가 계단에서 넘어지셨다. 혼자 지내시기가 점점 어렵다.',c:[
+ {t:'모시고 함께 산다',fx:{w:2,c:1,j:1},r:'아침마다 부엌에서 들리는 소리가 그리웠다는 걸 알았다.'},
+ {t:'주말마다 찾아뵙는다',fx:{c:2,j:1},r:'함께 시장을 보는 토요일이 일주일의 중심이 됐다.'},
+ {t:'부모님 집을 손수 고친다',fx:{d:3},r:'계단엔 손잡이를, 욕실엔 미끄럼 방지 타일을 붙였다.'},
+ {t:'바쁘다는 핑계로 연락을 미룬다',fx:{i:1,j:-2,iso:2},r:'"다음 주에 갈게요." 그 말을 반년째 하고 있다.'}]},
+{s:4,need:s=>(s.debt||0)>=2,t:'독촉 문자',x:'"[최종 안내] 연체 금액 즉시 상환 요망." 오늘만 일곱 번째 문자다.',c:[
+ {t:'허리띠를 졸라매고 갚아 나간다',fx:{w:3,j:-3,debt:-2},r:'점심은 도시락, 주말엔 대리운전. 3년 계획표를 냉장고에 붙였다.'},
+ {t:'한 번만 더 크게 걸어 만회한다',chk:'i',dc:42,ok:{fx:{j:8,debt:-9},r:'믿기지 않게도 한 번에 다 갚았다. 그리고 다시는 하지 않기로 했다.'},ng:{fx:{j:-8,debt:3},r:'"이번엔 다르다"는 말을 다섯 번째 했다. 이번에도 같았다.'}},
+ {t:'가족에게 털어놓고 도움을 청한다',fx:{c:1,j:1,debt:-1,iso:-1},r:'한참 말이 없던 아버지가 말했다. "왜 이제 말했니."'}]},
+{s:4,need:s=>(s.iso||0)>=3,t:'울리지 않는 휴대폰',x:'생일인데 휴대폰이 조용하다. 연락처를 내려 보니 마지막 통화가 반년 전이다.',c:[
+ {t:'오래된 친구에게 먼저 전화를 건다',fx:{c:2,j:3,iso:-2},r:'"야, 살아 있었냐?" 수화기 너머 목소리가 반가워서 웃음이 났다.'},
+ {t:'동네 모임에 나가 본다',fx:{c:2,p:1,iso:-1},r:'어색한 첫날이었다. 그래도 다음 주에 또 오라는 말을 들었다.'},
+ {t:'그냥 혼자 케이크를 먹는다',fx:{j:-3,iso:1},r:'초를 하나만 꽂았다. 불을 끄고 나니 방이 더 어두웠다.'}]},
+{s:4,t:'동창회',x:'초등학교 졸업 30주년 동창회 연락이 왔다.',c:[
+ {t:'반갑게 참석한다',fx:{c:3,j:3},r:'짝꿍이 그때 받은 쪽지를 아직 갖고 있었다.'},
+ {t:'사회를 맡는다',fx:{c:2,a:1},r:'장기자랑 사회를 보던 열한 살로 돌아간 기분이었다.'},
+ {t:'가지 않고 혼자 앨범을 본다',fx:{a:2,w:1,iso:1},r:'사진 속 아이에게 "잘 컸다"고 말해 줬다.'},
+ {t:'단체방을 나가 버린다',fx:{w:1,iso:2},r:'"{N}님이 나갔습니다." 그 뒤로 아무도 연락하지 않았다.'}]}
+];
+const CHAL={
+ i:{t:'평생 매달린 난제의 증명을 발표한다',ok:'학계가 술렁였다. 증명은 세 번의 검증을 통과했다.',ng:'마지막 보조정리에 구멍이 있었다. 그래도 그 구멍은 후배들의 연구 주제가 됐다.'},
+ p:{t:'세계 대회 마지막 레이스에 선다',ok:'은퇴를 앞둔 마지막 레이스, 개인 최고 기록이 나왔다.',ng:'결승선 직전 근육이 올라왔다. 절뚝이며 끝까지 들어왔다.'},
+ d:{t:'아무도 만들지 못한 장치를 완성한다',ok:'시제품이 첫 시험에서 완벽하게 작동했다.',ng:'설계는 옳았지만 부품이 버티지 못했다. 다음 버전이 기다린다.'},
+ a:{t:'일생의 작품을 세상에 내놓는다',ok:'첫날 관객석에서 긴 침묵이 흐르고, 이어서 박수가 쏟아졌다.',ng:'평단은 차가웠다. 하지만 한 관객이 보낸 긴 편지가 남았다.'},
+ c:{t:'수만 명 앞에서 연설한다',ok:'원고를 덮고 말하기 시작한 순간, 광장이 조용해졌다.',ng:'마이크가 꺼졌다. 육성으로 끝까지 말했고, 앞줄 사람들은 들었다.'},
+ w:{t:'혼자서 대륙을 횡단한다',ok:'출발 412일째, 반대편 바다에 발을 담갔다.',ng:'중간에 돌아서야 했다. 돌아서는 결정도 용기라는 걸 배웠다.'}};
+
+/* ── 엔딩 ── */
+const ENDINGS=[
+ {id:'astro',n:'우주비행사',x:'머리와 몸, 그리고 끝까지 버티는 힘이 한 사람 안에 다 있어야 하는 자리. {N}은(는) 국제우주정거장의 둥근 창에 이마를 대고 파란 지구를 내려다본다. 동물원에서 "기린은 왜 목이 길어?"라고 묻던 아이는 이제 "지구는 왜 이렇게 예쁘지?"라고 일지에 적는다.'},
+ {id:'ren',n:'르네상스형 인간',x:'연구실에서 낮을 보내고, 공방에서 저녁을 보내고, 밤에는 피아노 앞에 앉는다. 사람들은 {N}을(를) 두고 "무엇을 하는 사람인지 한마디로 설명할 수 없다"고 말한다. {N}은(는) 그 말을 최고의 칭찬으로 듣는다.'},
+ {id:'ord',n:'평범하고 다정한 어른',x:'유명해지지는 않았다. 대신 동네 사람들은 고장 난 물건, 고민 상담, 아이 숙제까지 무엇이든 {N}에게 먼저 물어본다. 저녁이면 가족과 식탁에 둘러앉아 오늘 있었던 일을 이야기한다. 그것으로 충분한 삶.'},
+ {id:'rest',n:'쉼표를 배운 사람',x:'마흔다섯의 어느 아침, {N}은(는) 출근길 지하철에서 내리지 못했다. 종점까지 간 뒤에야 오래 쉬지 못했다는 걸 깨달았다. 1년의 휴식. 그동안 처음으로 아무것도 증명하지 않는 하루를 살아 봤다. 삶의 후반전은 조금 느리게, 그러나 자기 속도로 시작된다.'},
+ {id:'fam',n:'웃음소리 가득한 집',x:'마흔다섯 {N}의 집은 하루도 조용할 날이 없다. 아이는 {P}을(를) 쫓아 거실을 뛰어다니고, {L}은(는) 부엌에서 노래를 흥얼거린다. 문틀에는 {N}의 연필 자국 옆으로 아이의 자국이 하나씩 늘어 간다. 이름을 크게 남기지는 않았지만, {N}은(는) 세상에서 가장 따뜻한 자리를 만들었다.'},
+ {id:'friends',n:'친구들과 늙어 가는 집',x:'마당 있는 집의 저녁 식탁에 다섯 개의 숟가락이 놓인다. 결혼하지 않은 {N}의 곁에는 서른 해를 함께한 친구들이 있다. 누군가 아프면 죽을 끓이고, 누군가 승진하면 마당에서 고기를 굽는다. 사람들은 묻는다. "외롭지 않아?" {N}은(는) 웃으며 대답한다. "매일 시끄러워서 문제야."'},
+ {id:'ceo',n:'유니콘 기업 대표',x:'스무 살에 찍은 명함 100장 중 아흔 장은 서랍에 남았었다. 지금 {N}의 회사는 직원 800명, 기업 가치 1조 원. 밀린 월세를 걱정하던 첫 사무실 열쇠를 {N}은(는) 아직도 열쇠고리에 달고 다닌다. 신입 사원 환영회 때마다 같은 말을 한다. "망해도 괜찮아요. 저도 망할 뻔한 게 열 번이에요."'},
+ {id:'vet',n:'동네 동물병원 원장',x:'{N}의 동물병원 대기실 벽에는 {FP}의 사진이 걸려 있다. 아픈 {FP} 곁에서 아무것도 해 줄 수 없었던 밤이 {N}을(를) 이 길로 이끌었다. 새벽에 걸려 오는 응급 전화도 마다하지 않는다. 진료를 마친 보호자가 "고맙습니다"라고 말할 때마다, {N}은(는) 열두 살의 자신에게 조용히 대답한다.'},
+ {id:'i',n:'노벨상 수상 과학자',x:'스톡홀름의 시상식장. {N}은(는) 수상 소감에서 어린 시절 창밖의 구름을 하루 종일 바라보던 이야기를 꺼냈다. "궁금한 걸 끝까지 궁금해했을 뿐입니다." 강연이 끝나자 객석의 젊은 연구자들이 일어섰다.'},
+ {id:'p',n:'올림픽 금메달리스트',x:'시상대 맨 위에서 애국가가 울린다. 소파를 붙잡고 첫걸음을 떼던 날부터 이어진 수만 번의 걸음이 이 순간을 위한 것이었다. 은퇴 후 {N}은(는) 동네 아이들에게 달리기를 가르친다. "넘어져도 돼. 다시 일어나면 돼."'},
+ {id:'d',n:'세계적인 발명가',x:'{N}의 작업실에는 실패한 시제품이 천장까지 쌓여 있다. 그중 하나가 전 세계 병원에서 쓰이는 장비가 되었다. 기자가 비결을 묻자 {N}은(는) 어릴 적 고장 난 라디오 이야기를 한다. "나사가 몇 개 남아도 괜찮아요."'},
+ {id:'a',n:'교향곡 작곡가',x:'예술의전당. 120명의 오케스트라가 {N}의 교향곡 1번을 초연한다. 3악장에는 어릴 적 딸랑이 소리를 닮은 선율이 숨어 있다. 마지막 화음이 사라진 뒤, 객석은 한참 동안 박수를 멈추지 않았다.'},
+ {id:'c',n:'국민 MC',x:'토요일 저녁, 온 가족이 보는 예능 프로그램의 메인 MC. {N}이(가) 무대에 서면 긴장한 게스트도 금세 웃는다. 연말 시상식 대상 소감은 짧았다. "제 옆에 서 준 모든 사람 덕분입니다."'},
+ {id:'w',n:'고요한 수행자',x:'산사의 새벽 세 시. {N}은(는) 종을 치고 하루를 연다. 세상이 원하는 것을 하나씩 내려놓다 보니 마지막에 남은 건 단단한 마음 하나였다. 산을 찾는 사람들은 {N}과(와) 차 한 잔을 나누고 돌아갈 때면 표정이 달라져 있다.'},
+ {id:'ip',n:'극지 연구원',x:'영하 40도의 남극 기지. {N}은(는) 썰매를 끌고 빙하 위를 걸으며 얼음 속 공기 방울을 채취한다. 그 안에는 80만 년 전의 하늘이 담겨 있다. 연구 논문이 나올 때마다, 기후를 지키려는 사람들의 근거가 하나씩 늘어난다.'},
+ {id:'id',n:'외과 의사',x:'열네 시간의 수술. 마지막 봉합을 마친 {N}의 손은 여전히 떨리지 않는다. 블록 설명서의 틀린 그림을 찾아내던 눈과, 크레파스를 눕혀 칠하던 손. 그 두 가지가 오늘도 한 사람을 살렸다.'},
+ {id:'ia',n:'소설가',x:'{N}의 장편소설이 30개 언어로 번역되었다. 서랍 속 부치지 못한 편지들, 혼자 견딘 시간들이 모두 문장이 되었다. 독자 사인회에서 한 학생이 묻는다. "어떻게 하면 작가가 될 수 있어요?" {N}은(는) 대답한다. "오늘 느낀 걸 오늘 적으면 돼요."'},
+ {id:'ic',n:'인권 변호사',x:'법정에서 {N}의 최후 변론이 끝나자 방청석이 조용해졌다. 쉬는 시간에 놀림받던 짝꿍 앞을 막아섰던 아이는, 이제 목소리가 없는 사람들의 목소리가 되었다. 승소 소식을 들은 의뢰인이 법원 앞에서 울며 웃었다.'},
+ {id:'iw',n:'수학자',x:'7년 동안 한 문제만 붙잡았다. 칠판 앞에서 보낸 날이 2,500일을 넘겼을 때, 마지막 줄이 완성되었다. {N}의 증명은 학술지 한 권을 통째로 채웠다. "포기하지 않은 게 아니라, 그만둘 이유를 못 찾았을 뿐이에요."'},
+ {id:'pd',n:'액션 무술 감독',x:'{N}이(가) 설계한 액션 장면이 세계 영화제에서 화제가 되었다. 0.1초 단위로 짜인 합, 안전 장비 하나까지 직접 손본 촬영장. "다치지 않고 멋있게." 그 원칙 덕분에 {N}의 현장에선 단 한 번도 큰 사고가 없었다.'},
+ {id:'pa',n:'현대무용가',x:'조명 하나만 켜진 무대. {N}의 몸이 말없이 이야기를 시작한다. 첫사랑, 이별, 할아버지의 공방. 70분의 공연이 끝나고 관객들은 눈물을 닦으며 일어섰다. 해외 투어 일정이 2년 뒤까지 꽉 찼다.'},
+ {id:'pc',n:'국가대표 주장',x:'주장 완장을 찬 {N}이(가) 라커룸에서 마지막 말을 건넨다. "우리가 여기까지 온 건 서로를 믿어서야." 그날 경기는 역사에 남았다. 팬들은 {N}의 골보다 쓰러진 동료에게 먼저 손을 내미는 모습을 더 오래 기억한다.'},
+ {id:'pw',n:'소방관',x:'새벽 두 시의 출동 벨. {N}은(는) 30초 만에 장비를 갖추고 차에 오른다. 연기 속에서 아이를 안고 나왔을 때, 바깥의 박수 소리는 들리지 않았다. 들린 건 품 안의 작은 울음소리뿐. 그걸로 충분했다.'},
+ {id:'da',n:'도예가',x:'물레 위의 흙이 {N}의 손끝에서 숨을 쉰다. 가마를 열 때마다 불이 만든 무늬가 다르다. {N}의 달항아리는 해외 미술관에 소장되었지만, {N}이(가) 가장 아끼는 건 동네 아이들과 함께 빚은 삐뚤어진 컵이다.'},
+ {id:'dc',n:'스타 셰프',x:'예약이 6개월 뒤까지 차 있는 레스토랑. {N}은(는) 주방에서 칼을 들고, 홀에 나와 손님들과 웃는다. 대표 메뉴는 축제 부스에서 세 번 배합을 바꾼 고추장 소스를 다듬은 것. 맛보다 이야기에 먼저 반하는 손님이 많다.'},
+ {id:'dw',n:'가구 장인',x:'할아버지의 대패는 이제 {N}의 손에 있다. 못 하나 쓰지 않고 짜 맞춘 의자 하나에 석 달. {N}의 공방에는 30년을 기다려 주문한 손님도 있다. "백 년 쓸 물건은 백 년 쓸 마음으로 만들어야죠."'},
+ {id:'ac',n:'배우',x:'레드카펫 위의 {N}. 하지만 {N}이(가) 가장 좋아하는 곳은 여전히 소극장 무대다. 대사 세 줄짜리 나무 역할로 시작했던 연기는 이제 관객을 웃기고 울린다. 수상 소감은 늘 같다. "무대에 서게 해 준 모든 관객에게."'},
+ {id:'aw',n:'화가',x:'{N}의 회고전이 열렸다. 거실 벽에 크레파스로 그렸던 첫 그림부터 마지막 대작까지. 팔리지 않던 시절에도 붓을 놓지 않았다. 전시장을 나서는 관객들은 하나같이 하늘을 올려다본다. {N}의 그림 속 하늘을 닮았기 때문이다.'},
+ {id:'cw',n:'시장(市長)',x:'꺼진 가로등 하나로 시작한 주민 모임이 {N}을(를) 시청까지 데려왔다. 당선 첫날, {N}은(는) 시장실 대신 골목을 걸었다. "큰 정책보다 오늘 밤 불이 켜지는 가로등 하나가 먼저입니다." 시민들은 {N}을(를) 시장님보다 "우리 동네 사람"으로 부른다.'},
+ {id:'bidle',bad:1,n:'방 안의 백수',x:'마흔다섯의 {N}은(는) 여전히 어릴 적 그 방에 산다. 커튼은 늘 쳐져 있고, 모니터 불빛만 시간을 알려 준다. "내일부터"라고 말한 날이 수천 번 쌓였다. 방문 너머로 들리는 부모님의 발소리가 해마다 느려진다. {N}은(는) 그 소리를 들으며 오늘도 이불을 머리끝까지 끌어올린다.'},
+ {id:'blone',bad:1,n:'아무도 모르게',x:'{N}의 휴대폰은 몇 년째 울리지 않았다. 문을 두드리는 사람은 택배 기사뿐이었다. 어느 겨울부터 우편함에 고지서가 쌓이기 시작했지만, 이상하게 여긴 사람은 없었다. 관리사무소 직원이 문을 연 건 한참 뒤였다. 책상 위 휴대폰에는 끝내 보내지 못한 메시지 하나가 열려 있었다. "잘 지내?"'},
+ {id:'bdebt',bad:1,n:'빚더미 인생',x:'독촉 문자는 하루에 열 통씩 온다. "이번 한 번만"이 다섯 번째 대출이 되었다. {N}은(는) 새로 이사한 집 주소를 아무에게도 알려 주지 않았다. 한때 손에 쥐었던 것들은 모두 이자로 사라졌다. 남은 건 상환일마다 빨간 동그라미를 친 달력 한 장이다.'},
+ {id:'blost',bad:1,n:'잃어버린 꿈',x:'모든 것을 걸었던 꿈은 마지막 문턱에서 번번이 {N}을(를) 밀어냈다. 다른 길을 찾기엔 너무 멀리 와 있었다. 지금 {N}은(는) 그 꿈과 상관없는 일을 하며, 가끔 서랍 속 오래된 상장을 꺼내 본다. "조금만 더 했더라면." 그 말은 이제 입버릇이 되었다.'},
+ {id:'bempty',bad:1,n:'텅 빈 성공',x:'이름을 대면 모두가 아는 사람이 되었다. 넓은 집, 높은 연봉, 빈틈없는 일정표. 그런데 마흔다섯 번째 생일 저녁, 축하 메시지는 전부 회사 공식 계정에서 왔다. {N}은(는) 아무도 없는 거실에서 혼자 초를 껐다. 무엇을 위해 그렇게 달려왔는지, 더는 기억나지 않는다.'}
+];
+const ORDER='ipdacw';
+/* 엔딩 조건 설명: 도감에서 이미 본 엔딩에만 보여 준다 */
+const HINTS={
+  astro:'지능 40·운동 40·의지 26 이상',
+  ren:'여섯 능력치가 모두 30 이상',
+  ord:'능력치가 고르게 자라고(최고와 최저 차이 15 이하) 행복 50 이상',
+  rest:'행복이 20 아래로 떨어졌을 때',
+  fam:'결혼 또는 동반자, 아이, 반려동물이 모두 있고 행복 75 이상',
+  friends:'비혼으로 친구들과 함께 살고 행복 70 이상',
+  ceo:'창업에 성공하고, 가장 높은 능력치가 매력·의지·손재주 중 하나이며 42 이상일 때',
+  vet:'반려동물과의 유대가 4 이상이고 지능이 상위 두 능력치에 들 때',
+  bidle:'게으름이 크게 쌓였을 때 (편한 선택의 반복)',
+  blone:'고립이 쌓이고 곁에 배우자·친구·아이·반려동물이 아무도 없을 때',
+  bdebt:'빚이 6 이상 쌓였을 때',
+  blost:'큰 도전에서 세 번 이상 실패하고 마지막 도전까지 실패했을 때',
+  bempty:'최고 능력치가 50 이상인데 행복이 30 미만이고 곁에 사람이 없을 때'};
+function hintOf(id){
+  if(HINTS[id])return HINTS[id];
+  if(id.length===1){const n=SN[id];return `${n}${josa(n,'이','가')} 2위 능력치보다 18 이상 높을 때`}
+  const a=SN[id[0]],b=SN[id[1]];return `가장 높은 두 능력치가 ${a}·${b}일 때`;
+}
+
+/* ───────── 상태 ───────── */
+const SAVE_KEY='jaraneun-save-v1', END_KEY='jaraneun-endings-v1';
+const ls={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},
+  del(k){try{localStorage.removeItem(k)}catch(e){}}};
+let SETTINGS=false;
+let S=null, VIEW='title', CONFIRM=false, TYPED='', NAMEERR=false, GENDER='', GENDERERR=false;
+const app=document.getElementById('app');
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function josa(name,a,b){const c=name.charCodeAt(name.length-1);if(c<0xAC00||c>0xD7A3)return a+'('+b+')';return ((c-0xAC00)%28)?a:b}
+function nameOf(k){
+  if(k==='N')return S?S.name:'아이';
+  if(k==='P')return S&&S.pet?S.pet.name:'반려동물';
+  if(k==='FP')return S&&S.firstPet?S.firstPet:'첫 반려동물';
+  if(k==='L')return S&&S.partner?S.partner.name:'그 사람';
+  if(k==='GR'){const sc=S.stats.i+S.stats.w*.4+(S.gr||0)*1.5;const pct=Math.max(1,Math.min(96,Math.round(96-(sc-12)*2)));
+    return `전국 상위 ${pct}%.`+(pct<=5?' 최상위권이다.':pct<=30?' 꽤 괜찮은 점수다.':pct<=60?' 딱 중간쯤이다.':' 기대보다 낮다.')}
+  return '';
+}
+function fill(t){return String(t).replace(/\{(N|P|FP|L|GR)\}(이\(가\)|은\(는\)|을\(를\)|과\(와\)|와)?/g,(m,k,j)=>{const n=nameOf(k);
+  if(!j)return n; if(j==='와')return n+josa(n,'과','와'); const [a,b]=j.slice(0,-1).split('(');return n+josa(n,a,b)})}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+function newGame(name,gender){
+  const t=TEMPERS[Math.floor(Math.random()*6)];
+  const st={};STATS.forEach(s=>st[s.k]=3);st[t.k]+=4;
+  S={name,gender,temper:t.k,stats:st,joy:50,stage:0,queue:[],qi:0,traits:[],log:[],last:null,phase:'intro',stageStart:{...st},offer:null,pet:null,firstPet:null,partner:null,kids:0,bond:0,solo:false,cohouse:false,iso:0,debt:0,idle:0,bigFail:0};
+  buildQueue();save();
+}
+function buildQueue(){
+  const st=STAGES[S.stage];
+  const all=EV.map((e,i)=>i).filter(i=>EV[i].s===S.stage);
+  const ok=i=>!EV[i].need||EV[i].need(S);
+  const fixed=all.filter(i=>EV[i].fix&&(EV[i].lazy||ok(i)));
+  const solid=fixed.filter(i=>!EV[i].lazy).length;
+  const rand=shuffle(all.filter(i=>!EV[i].fix&&ok(i))).slice(0,Math.max(0,st.n-solid-(S.stage===4?1:0)));
+  // 원래 순서(대략적인 나이 흐름)를 유지
+  const pool=[...fixed,...rand].sort((a,b)=>a-b);
+  if(S.stage===4)pool.push('CHAL');
+  S.queue=pool;S.qi=0;S.done=0;S.stageStart={...S.stats};skipInvalid();
+}
+function skipInvalid(){while(S.qi<S.queue.length&&S.queue[S.qi]!=='CHAL'&&EV[S.queue[S.qi]].need&&!EV[S.queue[S.qi]].need(S))S.qi++}
+function choicesOf(ev){return ev.c.filter(c=>!c.need||c.need(S))}
+function dcOf(c){return typeof c.dc==='function'?c.dc(S):c.dc}
+/* 진행도: 지금 조건으로 앞으로 나올 사건만 센다 (조건이 안 맞아 건너뛸 사건은 빼고) */
+function stageTotal(){let n=S.done||0;for(let k=S.qi;k<S.queue.length;k++){const id=S.queue[k];if(id==='CHAL'||!EV[id].need||EV[id].need(S))n++}return Math.max(n,(S.done||0)+1)}
+function ageNow(){const st=STAGES[S.stage];const span=st.to-st.from+1;return Math.min(st.to,st.from+Math.floor((S.done||0)*span/stageTotal()))}
+function currentEvent(){
+  const id=S.queue[S.qi];
+  if(id!=='CHAL')return EV[id];
+  const top=STATS.map(s=>s.k).sort((a,b)=>S.stats[b]-S.stats[a]).slice(0,2);
+  return {t:'인생 최대의 도전',x:'마흔다섯. 지금까지 쌓아 온 모든 것을 걸어 볼 기회가 왔다. 성공하면 이름이 남고, 실패해도 무언가는 남을 것이다.',c:[
+    ...top.map(k=>({t:CHAL[k].t,chk:k,dc:38,ok:{fx:{[k]:8,j:6},r:CHAL[k].ok},ng:{fx:{[k]:3,w:3},r:CHAL[k].ng}})),
+    {t:'도전 대신 지금의 삶을 지킨다',fx:{j:6,w:1},r:'모두가 아쉬워했지만, 그날 저녁 식탁은 따뜻했다.'}]};
+}
+function chance(k,dc){let c=50+(S.stats[k]-dc)*4;c=Math.max(8,Math.min(92,c));if(S.traits.includes('lk'))c=Math.min(97,c+15);return Math.round(c)}
+function applyFx(fx){
+  const d={};
+  for(const k in fx){
+    let v=fx[k];
+    if(k==='b'){S.bond=(S.bond||0)+v;d.b=v;continue}
+    if(k==='gr'){S.gr=(S.gr||0)+v;d.gr=v;continue}
+    if(k==='iso'||k==='debt'||k==='idle'){S[k]=Math.max(0,(S[k]||0)+v);d[k]=v;continue}
+    if(k==='l'){if(S.partner)S.partner.love+=v;d.l=v;continue}
+    if(k==='j'){
+      if(S.traits.includes('op'))v=v>0?v+2:Math.ceil(v/2);
+      S.joy=Math.max(0,Math.min(100,S.joy+v));d.j=(d.j||0)+v;continue}
+    if(v>0){const t=TRAITS.find(t=>t.s===k&&S.traits.includes(t.id));if(t)v+=1}
+    S.stats[k]=Math.max(0,S.stats[k]+v);d[k]=(d[k]||0)+v;
+  }
+  if(S.traits.includes('fc')){
+    const ks=Object.keys(d).filter(k=>ORDER.includes(k)&&d[k]>0).sort((a,b)=>d[b]-d[a]);
+    if(ks.length){S.stats[ks[0]]+=2;d[ks[0]]+=2}}
+  if(S.traits.includes('vs')){const k=ORDER[Math.floor(Math.random()*6)];S.stats[k]+=1;d[k]=(d[k]||0)+1}
+  return d;
+}
+function choose(ci){
+  const ev=currentEvent(), c=choicesOf(ev)[ci], age=ageNow();
+  const snap=JSON.stringify({...S,undo:null});
+  let res,verdict=null;
+  S.rolls=S.rolls||{};const rk=S.stage+'-'+S.qi;
+  if(c.chk){const p=chance(c.chk,dcOf(c));if(S.rolls[rk]==null)S.rolls[rk]=Math.random()*100;const ok=S.rolls[rk]<p;res=ok?c.ok:c.ng;verdict={ok,p,k:c.chk};if(!ok&&dcOf(c)>=18)S.bigFail=(S.bigFail||0)+1}
+  else res=c;
+  const d=applyFx(res.fx);
+  S.undo=snap;S.done=(S.done||0)+1;
+  if(res.on)res.on(S);
+  if(S.pet&&S.pet.alive&&!S.pet.name){
+    S.pending={title:fill(ev.t),choice:fill(c.t),r:res.r,d,verdict,age};S.phase='petname';save();render();
+    document.getElementById('pn')?.focus();return}
+  S.last={title:fill(ev.t),choice:fill(c.t),r:fill(res.r),d,verdict,age};
+  S.log.push({age,t:fill(ev.t),c:fill(c.t),v:verdict?verdict.ok:null});
+  S.phase='result';save();render();
+}
+let PETERR=false;
+function namePet(){
+  const v=(document.getElementById('pn')?.value||'').trim();
+  if(!v){PETERR=true;render();document.getElementById('pn')?.focus();return}
+  PETERR=false;S.pet.name=v;if(!S.firstPet)S.firstPet=v;
+  const P=S.pending;S.pending=null;
+  S.last={...P,r:fill(P.r)};
+  S.log.push({age:P.age,t:P.title,c:P.choice+` (이름: ${v})`,v:P.verdict?P.verdict.ok:null});
+  S.phase='result';save();render();
+}
+/* 마지막 선택 되돌리기: 판정 주사위는 그대로 남겨 같은 결과가 나오게 한다 */
+function undo(){
+  if(!S||!S.undo)return;
+  const rolls=S.rolls||{};
+  S=JSON.parse(S.undo);S.rolls=rolls;S.undo=null;S.phase='event';
+  PETERR=false;save();render();
+}
+function undoBtn(){return S&&S.undo?`<button class="undo-btn" data-a="undo" aria-label="이전 선택으로 되돌리기" title="이전 선택으로 되돌리기"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 14 4 9l5-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>`:''}
+function next(){
+  S.qi++;skipInvalid();
+  if(S.qi>=S.queue.length){
+    if(S.stage>=STAGES.length-1){finish();return}
+    const avail=shuffle(TRAITS.filter(t=>!S.traits.includes(t.id))).slice(0,3).map(t=>t.id);
+    S.offer=avail;S.phase='stage';
+  }else S.phase='event';
+  save();render();
+}
+function pickTrait(id){
+  S.traits.push(id);S.traitAt=S.traitAt||{};S.traitAt[id]=S.stage;S.joy=Math.max(0,Math.min(100,S.joy-8+familyBonus().total));S.stage++;buildQueue();S.phase='event';S.offer=null;save();render();
+}
+function familyBonus(){
+  const paired=S.partner&&(S.partner.st==='married'||S.partner.st==='together');
+  const p=paired?5:0, o=!paired&&S.solo?5:0, f=!paired&&S.cohouse?3:0;
+  const a=S.pet&&S.pet.alive?3:0, k=S.kids?3:0;
+  return {p,o,f,a,k,total:p+o+f+a+k};
+}
+function decideEnding(){
+  const st=S.stats, v=ORDER.split('').map(k=>st[k]);
+  const sorted=ORDER.split('').sort((a,b)=>st[b]-st[a]);
+  const max=Math.max(...v),min=Math.min(...v);
+  const paired=S.partner&&(S.partner.st==='married'||S.partner.st==='together');
+  const sum=v.reduce((a,b)=>a+b,0);
+  if(S.debt>=6)return 'bdebt';
+  if(!paired&&!S.cohouse&&!S.kids&&!(S.pet&&S.pet.alive)&&S.iso>=5)return 'blone';
+  if(S.idle>=6||S.idle>=4&&sum<175||sum<120)return 'bidle';
+  if(max>=50&&S.joy<30&&(S.iso>=3||!paired))return 'bempty';
+  const lastLog=S.log[S.log.length-1];
+  if(S.bigFail>=3&&lastLog&&lastLog.v===false)return 'blost';
+  if(S.joy<20)return 'rest';
+  if(st.i>=40&&st.p>=40&&st.w>=26)return 'astro';
+  if(S.partner&&S.partner.st!=='parted'&&S.partner.st!=='dating'&&S.kids&&S.pet&&S.pet.alive&&S.joy>=75)return 'fam';
+  if(S.solo&&S.cohouse&&!(S.partner&&(S.partner.st==='married'||S.partner.st==='together'))&&S.joy>=70)return 'friends';
+  if(S.biz==='ok'&&'cwd'.includes(sorted[0])&&st[sorted[0]]>=42&&S.joy>=35)return 'ceo';
+  if((S.bond||0)>=4&&sorted.slice(0,2).includes('i'))return 'vet';
+  if(min>=30)return 'ren';
+  if(max-min<=15&&S.joy>=50)return 'ord';
+  if(st[sorted[0]]-st[sorted[1]]>=18)return sorted[0];
+  return [sorted[0],sorted[1]].sort((a,b)=>ORDER.indexOf(a)-ORDER.indexOf(b)).join('');
+}
+function finish(){
+  const id=decideEnding();S.ending=id;S.phase='ending';
+  const got=ls.get(END_KEY)||{};if(!got[id])got[id]={name:S.name,at:Date.now()};ls.set(END_KEY,got);
+  ls.del(SAVE_KEY);render();
+}
+function save(){ls.set(SAVE_KEY,S)}
+
+/* ───────── 그리기 ───────── */
+function ruler(){
+  const W=470,x=a=>12+a*10, age=S?(S.phase==='ending'?45:ageNow()):0, cur=S?S.stage:-1;
+  const narrow=window.innerWidth<520, fsS=narrow?18:13, fsN=narrow?16:11, every=narrow?10:5;
+  let g='';
+  STAGES.forEach((s,i)=>{
+    const x1=x(s.from)-5,x2=x(s.to)+5;
+    g+=`<rect x="${x1}" y="30" width="${x2-x1}" height="6" rx="2" fill="${i<=cur?'var(--pencil)':'var(--line)'}" opacity="${i===cur?1:i<cur?.45:1}"/>`;
+    if(!narrow||i===cur){const cxm=Math.max(fsS*s.name.length/2+2,Math.min(W-fsS*s.name.length/2-2,(x1+x2)/2));
+      g+=`<text x="${cxm}" y="${narrow?56:52}" text-anchor="middle" font-size="${fsS}" fill="${i===cur?'var(--ink)':'var(--muted)'}">${s.name}</text>`}
+  });
+  for(let a=0;a<=45;a++){const big=a%5===0;g+=`<line x1="${x(a)}" x2="${x(a)}" y1="${big?14:19}" y2="28" stroke="var(--muted)" stroke-width="${big?1.2:.7}"/>`;
+    if(a%every===0)g+=`<text x="${x(a)}" y="11" text-anchor="middle" font-size="${fsN}" fill="var(--muted)">${a}</text>`}
+  if(S){g+=`<line x1="${x(age)}" x2="${x(age)}" y1="12" y2="38" stroke="var(--mark)" stroke-width="4" stroke-linecap="round"/>
+    <line x1="${x(age)-7}" x2="${x(age)+7}" y1="24" y2="22" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/>`}
+  return `<div class="ruler" aria-label="나이 ${age}세"><svg viewBox="0 0 ${W} ${narrow?66:58}" role="img"><title>키재기 자: 현재 ${age}세</title><g transform="translate(0,${narrow?4:0})">${g}</g></svg></div>`;
+}
+function statsPanel(d){
+  const max=Math.max(50,...Object.values(S.stats));
+  const face=S.joy>=75?'아주 행복':S.joy>=55?'즐거움':S.joy>=35?'그럭저럭':S.joy>=15?'지침':'바닥';
+  return `<section class="stats" aria-label="능력치">${STATS.map(s=>`<div class="stat"><div class="top"><span style="color:var(--st-${s.k})">${s.n}</span><span class="v">${S.stats[s.k]}${d&&d[s.k]?`<small style="font-size:13px;color:var(--st-${s.k})"> ${d[s.k]>0?'+':''}${d[s.k]}</small>`:''}</span></div><div class="bar"><i style="width:${S.stats[s.k]/max*100}%;background:var(--st-${s.k})"></i></div></div>`).join('')}
+  <div class="joy"><span>행복</span><div class="bar"><i style="width:${S.joy}%;background:var(--mark)"></i></div><span class="face">${face} ${S.joy}</span></div>
+  ${S.traits.length||familyChips().length?`<div class="traits">${familyChips().map(f=>`<span class="trait-chip fam">${esc(f)}</span>`).join('')}${S.traits.map(id=>{const t=TRAITS.find(x=>x.id===id);return `<span class="trait-chip" title="${esc(t.d)}">${esc(tn(id))}</span>`}).join('')}</div>`:''}</section>`;
+}
+function fxTags(fx){return Object.keys(fx).filter(k=>ORDER.includes(k)&&fx[k]>0).map(k=>`<span class="tag ${k}">${SN[k]}</span>`).join('')}
+function deltaTags(d){const lab={j:'행복',b:'반려동물과의 유대',l:'애정',iso:'고립',debt:'빚',idle:'게으름',gr:'성적'};return Object.keys(d).filter(k=>d[k]).map(k=>`<span class="tag ${ORDER.includes(k)?k:'j'}">${lab[k]||SN[k]} ${d[k]>0?'+':''}${d[k]}</span>`).join('')}
+const UNIV={top:'청운대(명문대)',mid:'도담대',local:'해솔국립대',arts:'누리예대',sports:'한결체대',low:'미래산업대'};
+function careerChip(){
+  if(S.biz==='ok')return '회사 대표';
+  if(S.path==='startup')return S.biz==='fail'?'폐업 경험':'창업 중';
+  if(S.univ){const u=UNIV[S.univ];const c={corp:'대기업',grad:'대학원',civil:'공무원',small:'회사원'}[S.career];return c?`${u} · ${c}`:u}
+  if(S.path==='job')return '현장 취업';
+  if(S.path==='retake')return '재수 중';
+  return null}
+function familyChips(){const out=[],p=S.partner;const cc=careerChip();if(cc)out.push(cc);
+  if(p&&p.st==='married')out.push(`배우자 ${p.name}`);
+  else if(p&&p.st==='together')out.push(`동반자 ${p.name}`);
+  else if(p&&p.st==='dating')out.push(`연인 ${p.name}`);
+  else if(S.solo)out.push(S.cohouse?'비혼 · 친구들과 함께':'비혼');
+  if(S.kids)out.push('아이 한 명');
+  if(S.pet&&S.pet.name)out.push(S.pet.alive?`${S.pet.type==='dog'?'반려견':'반려묘'} ${S.pet.name}`:`추억 속의 ${S.pet.name}`);
+  return out}
+function masthead(){return `<header class="masthead"><div class="brand">45년<small>인생 성장 시뮬레이션</small></div><div class="row"><button class="linkbtn" data-a="settings" aria-expanded="${SETTINGS}">설정</button>${S&&S.phase!=='ending'?`<button class="linkbtn" data-a="home">처음 화면</button>`:''}<button class="linkbtn" data-a="coll">엔딩 도감</button></div></header>`+(SETTINGS?settingsPanel():'')}
+
+function render(){
+  let h=masthead();
+  if(VIEW==='coll'){h+=collection();}
+  else if(!S||VIEW==='title'){h+=titleScreen();}
+  else if(S.phase==='intro'){const t=TEMPERS.find(t=>t.k===S.temper);
+    h+=ruler()+`<section class="sheet fade"><div class="eyebrow"><span class="age">0세</span>탄생</div><h2>${esc(S.name)}, 세상에 오다</h2>
+    <p class="story">새벽 4시 12분, 3.2kg. 간호사가 말했다. "건강한 ${S.gender==='f'?'여자아이':S.gender==='m'?'남자아이':'아기'}예요. ${t.n}네요." ${t.d}</p>
+    <p class="story">지금부터 마흔다섯 해 동안 ${esc(S.name)}의 하루하루를 골라 주세요. 어떤 선택이 쌓이느냐에 따라 전혀 다른 어른이 됩니다.</p>
+    <div class="deltas"><span class="tag ${S.temper}">타고난 ${SN[S.temper]} +4</span></div>
+    <button class="btn" data-a="begin">첫 페이지 넘기기</button></section>`+statsPanel();}
+  else if(S.phase==='event'){const ev=currentEvent();
+    h+=ruler()+`<section class="sheet fade">${undoBtn()}<div class="eyebrow"><span class="age">${ageNow()}세</span>${STAGES[S.stage].name} · ${(S.done||0)+1} / ${stageTotal()}</div>
+    <h2>${esc(fill(ev.t))}</h2><p class="story">${esc(fill(ev.x))}</p>
+    <div class="choices">${choicesOf(ev).map((c,i)=>`<button class="choice" data-c="${i}"><span class="ct">${esc(fill(c.t))}</span><span class="meta">${c.chk?`<span class="tag check">${SN[c.chk]} 판정 · 성공 ${chance(c.chk,dcOf(c))}%</span>`:fxTags(c.fx)}</span></button>`).join('')}</div></section>`+statsPanel();}
+  else if(S.phase==='petname'){const P=S.pending,kind=S.pet.type==='dog'?'강아지':'고양이';
+    h+=ruler()+`<section class="sheet fade">${undoBtn()}<div class="eyebrow"><span class="age">${P.age}세</span>${esc(P.title)}</div>
+    <h2>새 가족의 이름</h2>
+    <p class="story">집에 온 ${kind}가 낯선 냄새를 맡으며 거실을 살핀다. 앞으로 오래 불러 줄 이름을 지어 주세요.</p>
+    <div class="field"><label for="pn">${kind} 이름</label><input id="pn" maxlength="6" placeholder="이름을 입력하세요" autocomplete="off"${PETERR?' aria-invalid="true" aria-describedby="pnerr"':''}>${PETERR?'<span id="pnerr" style="color:var(--bad);font-size:14px">이름을 지어 주세요.</span>':''}</div>
+    <button class="btn" data-a="petname">이 이름으로 부르기</button></section>`+statsPanel();}
+  else if(S.phase==='result'){const L=S.last;
+    h+=ruler()+`<section class="sheet fade">${undoBtn()}<div class="eyebrow"><span class="age">${L.age}세</span>${esc(L.title)}</div>
+    <p class="hand">“${esc(L.choice)}”</p>
+    <div class="outcome">${L.verdict?`<div class="verdict ${L.verdict.ok?'ok':'ng'}">${L.verdict.ok?'성공!':'아쉽게 실패'} <small style="font-size:15px;color:var(--muted);font-weight:400">${SN[L.verdict.k]} 판정 ${L.verdict.p}%</small></div>`:''}
+    <p class="story">${esc(L.r)}</p><div class="deltas">${deltaTags(L.d)}</div></div>
+    <div class="row"><button class="btn" data-a="next">${S.qi+1>=S.queue.length?(S.stage>=4?'인생을 돌아보기':`${STAGES[S.stage].name} 마무리`):'다음 해로'}</button></div></section>`+statsPanel(L.d);}
+  else if(S.phase==='stage'){const st=STAGES[S.stage],nx=STAGES[S.stage+1];
+    const diff={};STATS.forEach(s=>diff[s.k]=S.stats[s.k]-S.stageStart[s.k]);
+    const best=STATS.map(s=>s.k).sort((a,b)=>diff[b]-diff[a])[0];
+    h+=ruler()+`<section class="sheet fade">${undoBtn()}<div class="eyebrow"><span class="age">${st.to}세</span>${st.name}${josa(st.name,'을','를')} 마치며</div>
+    <h2>${esc(S.name)}의 ${st.name}${josa(st.name,'이','가')} 끝났다</h2>
+    <p class="story">이 시기에 가장 많이 자란 건 <b style="color:var(--st-${best});font-weight:400">${SN[best]}</b>${josa(SN[best],'이었다','였다')}. 문틀에 연필로 새 금을 긋는다. 나이가 들수록 걱정도 조금씩 늘어난다(행복 −8).${(()=>{const f=familyBonus(),o=[];if(f.p)o.push(`곁을 지키는 ${esc(S.partner.name)} +${f.p}`);if(f.o)o.push(`온전히 나만의 시간 +${f.o}`);if(f.f)o.push(`함께 사는 친구들 +${f.f}`);if(f.k)o.push(`아이의 웃음 +${f.k}`);if(f.a)o.push(`${esc(S.pet.name)}의 꼬리 +${f.a}`);return o.length?` 그래도 ${o.join(', ')}.`:''})()} 다음은 ${nx.name}(${nx.from}~${nx.to}세).</p>
+    <div class="recap">${STATS.map(s=>`<span class="tag ${s.k}">${s.n} +${diff[s.k]}</span>`).join('')}</div>
+    <div><p class="hand" style="margin:0 0 10px">이 무렵 생긴 습관 하나를 고르세요</p>
+    <div class="trait-pick">${S.offer.map(id=>{const t=TRAITS.find(x=>x.id===id);return `<button class="trait" data-t="${id}"><span class="tn">${esc(tn(id,S.stage))}</span><span class="td">${t.d}</span></button>`}).join('')}</div></div></section>`+statsPanel();}
+  else if(S.phase==='ending'){h+=endingScreen();}
+  app.innerHTML=h;
+  syncBgm();
+  window.scrollTo({top:0,behavior:'instant'in window?'instant':'auto'});
+}
+function titleScreen(){
+  const saved=ls.get(SAVE_KEY), got=ls.get(END_KEY)||{};
+  return `<section class="sheet fade">
+   <h1>어떤 어른이 될까</h1>
+   ${saved&&saved.phase!=='ending'?`<div class="row"><button class="btn" data-a="cont">이어서 하기 · ${esc(saved.name)}, ${STAGES[saved.stage].name}</button></div>`:''}
+   <div class="field"><label for="nm">아이의 이름</label><input id="nm" maxlength="8" value="${esc(TYPED)}" placeholder="이름을 입력하세요" autocomplete="off"${NAMEERR?' aria-invalid="true" aria-describedby="nmerr"':''}>${NAMEERR?'<span id="nmerr" style="color:var(--bad);font-size:14px">이름을 먼저 지어 주세요.</span>':''}</div>
+   <div class="field"><span class="lbl" id="glbl">성별</span><div class="seg" role="radiogroup" aria-labelledby="glbl">${[['m','남자'],['f','여자']].map(([k,l])=>`<button class="seg-btn" role="radio" aria-checked="${GENDER===k}" data-g="${k}">${l}</button>`).join('')}</div>${GENDERERR?'<span style="color:var(--bad);font-size:14px">성별을 골라 주세요.</span>':''}</div>
+   <div class="row">${saved&&saved.phase!=='ending'?(CONFIRM?`<div class="confirm">저장된 인생이 사라집니다. 새로 시작할까요? <button class="btn" data-a="startok">새로 시작</button><button class="btn ghost" data-a="nocf">취소</button></div>`:`<button class="btn ghost" data-a="start">새 인생 시작</button>`):`<button class="btn" data-a="start">새 인생 시작</button>`}
+   <span class="counter" style="color:var(--muted)">발견한 엔딩 ${Object.keys(got).length} / ${ENDINGS.length}</span></div>
+   <p class="save-note">중간에 나가도 자동 저장됩니다.</p>
+  </section>`;
+}
+function radar(){
+  const cx=110,cy=110,R=78,max=Math.max(40,...Object.values(S.stats));
+  const pt=(i,r)=>{const ang=-Math.PI/2+i*Math.PI*2/6;return [cx+Math.cos(ang)*r,cy+Math.sin(ang)*r]};
+  let g='';
+  [.33,.66,1].forEach(f=>{g+=`<polygon points="${STATS.map((s,i)=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="var(--line)"/>`});
+  STATS.forEach((s,i)=>{const [x,y]=pt(i,R);g+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--line)"/>`;
+    const [lx,ly]=pt(i,R+18);g+=`<text x="${lx}" y="${ly+4}" text-anchor="middle" fill="var(--st-${s.k})">${s.n} ${S.stats[s.k]}</text>`});
+  g+=`<polygon points="${STATS.map((s,i)=>pt(i,R*S.stats[s.k]/max).join(',')).join(' ')}" fill="var(--mark)" fill-opacity=".35" stroke="var(--ink)" stroke-width="1.5"/>`;
+  return `<svg class="radar" viewBox="0 0 220 220" role="img" style="width:100%;max-width:240px"><title>최종 능력치</title>${g}</svg>`;
+}
+function endingScreen(){
+  const E=ENDINGS.find(e=>e.id===S.ending), idx=ENDINGS.indexOf(E)+1, got=ls.get(END_KEY)||{};
+  const coda=E.bad?'어디서부터 달라졌을까. 다른 선택을 했다면, 다른 마흔다섯이 있었을지도 모른다.':S.joy>=70?'돌아보면 웃은 날이 우는 날보다 훨씬 많았다.':S.joy<=30?'성취의 무게만큼 외로운 밤도 많았다. 그래도 남은 날이 더 길다.':'기쁜 날과 힘든 날이 비슷하게 섞인, 사람다운 삶이었다.';
+  let fam='';
+  if(S.ending!=='fam'&&S.ending!=='friends'&&!E.bad){
+    const p=S.partner;
+    fam=p&&p.st==='married'?'{L}과(와) 함께 나이 들어 가는 중이다.':p&&p.st==='together'?'{L}과(와) 서류 없이 한 지붕 아래에서 산다.':S.cohouse?'결혼하지 않았지만, 저녁을 함께 먹는 친구들이 있다.':'혼자만의 저녁을 사랑하는 법을 안다.';
+    if(S.kids)fam+=' 아이의 연필 자국은 벌써 문틀 중간까지 올라왔다.';
+    if(S.pet&&S.pet.alive)fam+=' 발치에서는 {P}이(가) 졸고 있다.';
+    else if(S.firstPet)fam+=' 책상 위에는 {FP}의 사진이 놓여 있다.';
+  }
+  const wins=S.log.filter(l=>l.v===true).length, tries=S.log.filter(l=>l.v!==null).length;
+  return ruler()+`<section class="sheet fade">
+   <div class="ending-head"><span class="ending-no">${E.bad?'<span class="badmark">BAD END</span> ':''}엔딩 No.${String(idx).padStart(2,'0')} · 45세의 ${esc(S.name)}</span><h1>${E.n}</h1></div>
+   <div class="ending-grid"><div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+    <p class="story">${esc(fill(E.x))}</p>${fam?`<p class="story">${esc(fill(fam))}</p>`:''}<p class="story" style="color:var(--muted)">${coda}</p>
+    <div class="deltas"><span class="tag j">행복 ${S.joy}</span><span class="tag check">도전 성공 ${wins} / ${tries}</span>${familyChips().map(f=>`<span class="tag j">${esc(f)}</span>`).join('')}${S.traits.map(id=>`<span class="tag j">${esc(tn(id))}</span>`).join('')}</div>
+   </div><div>${radar()}</div></div>
+   <details><summary>${esc(S.name)}의 45년 다시 보기 (${S.log.length}개의 선택)</summary>
+    <div class="log">${S.log.map(l=>`<div><span class="a">${l.age}세</span><span><b>${esc(l.t)}</b> — ${esc(l.c)}${l.v===true?' <span style="color:var(--good)">성공</span>':l.v===false?' <span style="color:var(--bad)">실패</span>':''}</span></div>`).join('')}</div></details>
+   <div class="row"><button class="btn" data-a="again">다른 인생 살아 보기</button><button class="btn ghost" data-a="coll">엔딩 도감 (${Object.keys(got).length}/${ENDINGS.length})</button></div>
+  </section>`;
+}
+function collection(){
+  const got=ls.get(END_KEY)||{};
+  return `<section class="sheet fade"><div class="eyebrow">엔딩 도감</div><h2>지금까지 만난 어른들</h2>
+   <p class="counter">${Object.keys(got).length} / ${ENDINGS.length}</p>
+   <div class="coll">${ENDINGS.map((e,i)=>{const g=got[e.id];return `<div class="card ${g?'got':'locked'}"><span class="ch">No.${String(i+1).padStart(2,'0')}</span><span class="cn">${g?e.n:'？？？'}</span>${g?`<span class="ch">${esc(g.name)}의 엔딩</span><span class="hint">${esc(hintOf(e.id))}</span>`:''}</div>`}).join('')}</div>
+   <button class="btn ghost" data-a="back">돌아가기</button></section>`;
+}
+
+/* ───────── 소리: 칩튠 BGM과 효과음 (Web Audio로 직접 합성) ───────── */
+const AUDIO_KEY='jaraneun-audio-v1';
+const AU={ctx:null,bgmVol:60,sfxVol:70,master:null,bgm:null,sfx:null,timer:null,mode:null,step:0,next:0};
+(()=>{const p=ls.get(AUDIO_KEY);if(p){if(p.bv!=null)AU.bgmVol=p.bv;else if(p.bgm===false)AU.bgmVol=0;if(p.sv!=null)AU.sfxVol=p.sv;else if(p.sfx===false)AU.sfxVol=0}})();
+function audioPrefs(){ls.set(AUDIO_KEY,{bv:AU.bgmVol,sv:AU.sfxVol})}
+function ensureAudio(){
+  if(!AU.ctx){
+    try{AU.ctx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return false}
+    const c=AU.ctx;AU.master=c.createGain();AU.master.gain.value=.9;AU.master.connect(c.destination);
+    AU.bgm=c.createGain();AU.bgm.gain.value=AU.bgmVol/100*.9;AU.bgm.connect(AU.master);
+    AU.sfx=c.createGain();AU.sfx.gain.value=AU.sfxVol/100;AU.sfx.connect(AU.master);
+  }
+  if(AU.ctx.state==='suspended')AU.ctx.resume().catch(()=>{});
+  return true;
+}
+const mf=m=>440*Math.pow(2,(m-69)/12);
+function tone(midi,t,dur,type,vol,dest,slide){
+  const c=AU.ctx,o=c.createOscillator(),g=c.createGain();
+  o.type=type;o.frequency.setValueAtTime(mf(midi),t);
+  if(slide!=null)o.frequency.exponentialRampToValueAtTime(mf(midi+slide),t+dur);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.012);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g);g.connect(dest);o.start(t);o.stop(t+dur+.02);
+}
+/* 곡 정의: 코드(근음, 장/단) 4마디 + 템포 + 조옮김 */
+const MAJ=[0,4,7],MIN=[0,3,7];
+const SONGS={
+  title:{bpm:92,tr:0,prog:[[0,MAJ],[-3,MIN],[-7,MAJ],[-5,MAJ]]},
+  s0:{bpm:96,tr:0,prog:[[0,MAJ],[-7,MAJ],[-3,MIN],[-5,MAJ]]},
+  s1:{bpm:108,tr:2,prog:[[0,MAJ],[-3,MIN],[-7,MAJ],[-5,MAJ]]},
+  s2:{bpm:112,tr:-3,prog:[[-3,MIN],[-7,MAJ],[0,MAJ],[-5,MAJ]]},
+  s3:{bpm:104,tr:5,prog:[[0,MAJ],[-5,MAJ],[-3,MIN],[-7,MAJ]]},
+  s4:{bpm:88,tr:-2,prog:[[-7,MAJ],[-5,MAJ],[0,MAJ],[-3,MIN]]},
+  end:{bpm:78,tr:0,prog:[[-7,MAJ],[-5,MAJ],[-3,MIN],[0,MAJ]]},
+  bad:{bpm:70,tr:0,prog:[[-3,MIN],[-7,MAJ],[0,MAJ],[4,MAJ]]}};
+/* 마디별 멜로디 패턴: 코드 구성음 번호(0~5), null은 쉼표 */
+const PAT=[[0,2,1,2,3,2,1,null],[3,null,4,3,2,null,1,null],[1,2,3,null,2,1,0,null],[2,null,1,null,0,null,null,null]];
+function schedule(){
+  if(!AU.ctx||!AU.mode)return;
+  const song=SONGS[AU.mode],spb=60/song.bpm/2;
+  while(AU.next<AU.ctx.currentTime+.25){
+    const bar=Math.floor(AU.step/8)%4,pos=AU.step%8,[root,q]=song.prog[bar],base=60+song.tr+root;
+    const tones=[0,1,2].flatMap(o=>q.map(x=>x+o*12));
+    const n=PAT[(Math.floor(AU.step/8))%4][pos];
+    if(n!=null)tone(base+12+tones[n],AU.next,spb*1.6,'square',.045,AU.bgm);
+    if(pos===0||pos===4)tone(base-12,AU.next,spb*3.2,'triangle',.16,AU.bgm);
+    if(pos===2||pos===6)tone(base-12+q[2],AU.next,spb*1.2,'triangle',.08,AU.bgm);
+    AU.next+=spb;AU.step++;
+  }
+}
+function setBgm(mode){
+  if(!AU.ctx||AU.mode===mode)return;
+  AU.mode=mode;AU.step=0;AU.next=AU.ctx.currentTime+.08;
+  if(!AU.timer)AU.timer=setInterval(schedule,60);
+}
+function syncBgm(){
+  if(!AU.ctx)return;
+  let m='title';
+  if(S&&VIEW!=='coll'&&VIEW!=='title'){
+    if(S.phase==='ending'){const E=ENDINGS.find(e=>e.id===S.ending);m=E&&E.bad?'bad':'end'}
+    else m='s'+Math.min(4,S.stage);
+  }
+  setBgm(m);
+}
+function sfx(kind){
+  if(AU.sfxVol<=0||!ensureAudio())return;
+  const t=AU.ctx.currentTime+.01,d=AU.sfx;
+  if(kind==='pick'){tone(76,t,.07,'square',.12,d);tone(83,t+.06,.09,'square',.1,d)}
+  else if(kind==='page'){tone(72,t,.05,'triangle',.18,d,5)}
+  else if(kind==='ok'){[72,76,79,84].forEach((m,i)=>tone(m,t+i*.07,.16,'square',.1,d))}
+  else if(kind==='ng'){tone(67,t,.12,'square',.1,d);tone(63,t+.12,.28,'square',.1,d,-5)}
+  else if(kind==='trait'){[84,88,91,96,91].forEach((m,i)=>tone(m,t+i*.05,.12,'triangle',.14,d))}
+  else if(kind==='pet'){tone(79,t,.08,'square',.1,d);tone(84,t+.1,.08,'square',.1,d);tone(88,t+.2,.2,'square',.1,d)}
+  else if(kind==='end'){[60,64,67,72].forEach(m=>tone(m,t,1.6,'triangle',.12,d));tone(84,t+.2,1,'square',.06,d)}
+  else if(kind==='bad'){[57,60,64].forEach(m=>tone(m,t,1.8,'triangle',.12,d));tone(45,t,1.8,'square',.05,d,-2)}
+  else if(kind==='err'){tone(52,t,.15,'square',.1,d)}
+}
+function setVol(kind,v){
+  v=Math.max(0,Math.min(100,Math.round(v)));
+  if(kind==='bgm'){AU.bgmVol=v;if(ensureAudio()){syncBgm();AU.bgm.gain.setTargetAtTime(v/100*.9,AU.ctx.currentTime,.04)}}
+  else{AU.sfxVol=v;if(AU.sfx&&AU.ctx)AU.sfx.gain.setTargetAtTime(v/100,AU.ctx.currentTime,.02)}
+  audioPrefs();
+}
+function settingsPanel(){
+  const row=(k,label,v)=>`<div class="set-row"><label for="vol-${k}">${label}</label><input type="range" id="vol-${k}" min="0" max="100" step="5" value="${v}" aria-valuetext="${v}%"><output id="out-${k}" for="vol-${k}">${v?v+'%':'끔'}</output><button class="mini" data-a="mute-${k}">${v?'끄기':'켜기'}</button></div>`;
+  return `<section class="settings fade" aria-label="설정"><div class="set-head"><h3>설정</h3><button class="linkbtn" data-a="settings">닫기</button></div>
+   ${row('bgm','음악',AU.bgmVol)}${row('sfx','효과음',AU.sfxVol)}
+   <p class="set-note">설정은 이 기기에 저장돼요.</p></section>`;
+}
+document.addEventListener('pointerdown',()=>{if((AU.bgmVol||AU.sfxVol)&&ensureAudio())syncBgm()},{capture:true});
+document.addEventListener('keydown',()=>{if((AU.bgmVol||AU.sfxVol)&&ensureAudio())syncBgm()},{capture:true});
+app.addEventListener('input',e=>{const m=/^vol-(bgm|sfx)$/.exec(e.target.id||'');if(!m)return;const v=+e.target.value;setVol(m[1],v);
+  const o=document.getElementById('out-'+m[1]);if(o)o.textContent=v?v+'%':'끔';e.target.setAttribute('aria-valuetext',v+'%');
+  const b=e.target.parentNode.querySelector('.mini');if(b)b.textContent=v?'끄기':'켜기'});
+app.addEventListener('change',e=>{if(e.target.id==='vol-sfx')sfx('pick')});
+const LASTVOL={bgm:60,sfx:70};
+document.addEventListener('visibilitychange',()=>{if(!AU.ctx)return;if(document.hidden)AU.ctx.suspend().catch(()=>{});else AU.ctx.resume().catch(()=>{})});
+
+/* ───────── 입력 ───────── */
+app.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.c!==undefined){sfx('pick');choose(+b.dataset.c);if(S&&S.last&&S.phase==='result'&&S.last.verdict)setTimeout(()=>sfx(S.last.verdict.ok?'ok':'ng'),140);return}
+  if(b.dataset.g){GENDER=b.dataset.g;GENDERERR=false;sfx('pick');render();return}
+  if(b.dataset.t){sfx('trait');pickTrait(b.dataset.t);return}
+  const a=b.dataset.a;
+  const nm=()=>TYPED.trim();
+  if(a==='start'||a==='startok'){NAMEERR=!nm();GENDERERR=!GENDER;
+    if(NAMEERR||GENDERERR){CONFIRM=false;sfx('err');render();if(NAMEERR)document.getElementById('nm')?.focus();return}}
+  NAMEERR=false;GENDERERR=false;
+  if(a==='start'){if(ls.get(SAVE_KEY)&&!CONFIRM){CONFIRM=true;render();return}newGame(nm(),GENDER);CONFIRM=false;TYPED='';GENDER='';VIEW='game';render()}
+  else if(a==='startok'){newGame(nm(),GENDER);CONFIRM=false;TYPED='';GENDER='';VIEW='game';render()}
+  else if(a==='nocf'){CONFIRM=false;render()}
+  else if(a==='cont'){S=ls.get(SAVE_KEY);S.pet=S.pet||null;S.firstPet=S.firstPet||null;S.partner=S.partner||null;S.kids=S.kids||0;S.bond=S.bond||0;S.solo=!!S.solo;S.cohouse=!!S.cohouse;S.iso=S.iso||0;S.debt=S.debt||0;S.idle=S.idle||0;S.bigFail=S.bigFail||0;S.gr=S.gr||0;VIEW='game';render()}
+  else if(a==='begin'){sfx('page');S.phase='event';save();render()}
+  else if(a==='undo'){sfx('page');undo()}
+  else if(a==='next'){sfx('page');next();if(S&&S.phase==='ending'){const E=ENDINGS.find(e=>e.id===S.ending);setTimeout(()=>sfx(E&&E.bad?'bad':'end'),200)}}
+  else if(a==='settings'){SETTINGS=!SETTINGS;render()}
+  else if(a==='mute-bgm'||a==='mute-sfx'){const k=a.slice(5),cur=k==='bgm'?AU.bgmVol:AU.sfxVol;
+    if(cur){LASTVOL[k]=cur;setVol(k,0)}else{setVol(k,LASTVOL[k]||60);if(k==='sfx')sfx('pick')}render()}
+  else if(a==='petname'){namePet();sfx(S.phase==='result'?'pet':'err')}
+  else if(a==='home'){VIEW='title';S=null;render()}
+  else if(a==='again'){S=null;VIEW='title';render()}
+  else if(a==='coll'){if(VIEW==='coll'){VIEW=S?'game':'title'}else VIEW='coll';render()}
+  else if(a==='back'){VIEW=S?'game':'title';render()}
+});
+app.addEventListener('input',e=>{if(e.target.id==='nm'){TYPED=e.target.value;if(NAMEERR&&TYPED.trim()){NAMEERR=false;const m=document.getElementById('nmerr');if(m)m.remove();e.target.removeAttribute('aria-invalid')}}});
+app.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='nm'){app.querySelector('[data-a="start"],[data-a="startok"]')?.click()}if(e.key==='Enter'&&e.target.id==='pn'&&!e.isComposing){namePet()}});
+let lastNarrow=window.innerWidth<520;
+window.addEventListener('resize',()=>{const n=window.innerWidth<520;if(n!==lastNarrow){lastNarrow=n;const r=app.querySelector('.ruler');if(r&&S){const t=document.createElement('div');t.innerHTML=ruler();r.replaceWith(t.firstElementChild)}}});
+if(document.fonts&&document.fonts.load){document.fonts.load('16px NeoDunggeunmo').catch(()=>{})}
+render();
+</script>
+
+</body>
+</html>
